@@ -143,4 +143,12 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   console.log('errors:', errors);
   console.log('external requests:', requests);
   await browser.close();
-})();
+
+  const failures = [];
+  if (diff.issues && diff.issues.length) failures.push('Excel round trip changed data: ' + diff.issues.join('; '));
+  if (overflow || overflow2) failures.push('phone layout scrolls sideways');
+  if (errors.length) failures.push('console errors: ' + errors.join(' | '));
+  if (requests.length) failures.push('page made outgoing requests: ' + requests.join(', '));
+  if (failures.length) { console.error('FAILED\n- ' + failures.join('\n- ')); process.exit(1); }
+  console.log('ALL CHECKS PASSED');
+})().catch(err => { console.error(err); process.exit(1); });

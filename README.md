@@ -45,7 +45,17 @@ The test loads the deployable page, fills sample data, checks the safety warning
 
 ## Deploy
 
-Upload `dist/site/index.html` to a `virasat/` folder on the website so it opens at `gauravkhurana.com/virasat`. Keep analytics and tracking scripts off this page, or the "nothing leaves this browser" promise is no longer true.
+Every push to `main` runs `.github/workflows/deploy.yml`:
+
+1. Installs dependencies and builds `dist/site/index.html`.
+2. Runs the end-to-end test. If any check fails, nothing is deployed.
+3. Publishes `dist/site` to GitHub Pages.
+
+Because `gauravkhurana.com` is the custom domain of the user site (`gauravkhuraana.github.io`), this project site is served at **https://gauravkhurana.com/virasat/** with no extra DNS setup. You can also run the workflow by hand from the Actions tab ("Run workflow").
+
+One-time setup: **Settings > Pages > Build and deployment > Source: GitHub Actions.**
+
+Keep analytics and tracking scripts off this page, or the "nothing leaves this browser" promise is no longer true.
 
 ## Content status
 
