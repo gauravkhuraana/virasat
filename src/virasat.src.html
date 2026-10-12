@@ -109,6 +109,12 @@ a.btn{text-decoration:none}
 .go .btn.primary{font-size:1rem;padding:.75em 1.3em}
 .excel-alt{margin-top:.5rem;padding:1rem 1.1rem;border:1px dashed var(--line);border-radius:var(--r);display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;align-items:center;font-size:.92rem}
 .excel-alt p{flex:1 1 320px;color:var(--muted)}
+.excel-alt + .excel-alt{margin-top:.75rem}
+.support-mini{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.8rem;align-items:center;margin-top:1rem;padding:.75rem .9rem;border:1px dashed var(--line);border-radius:12px}
+.support-mini img{display:block;border:1px solid var(--line);border-radius:8px;background:#fff;padding:2px}
+.support-mini div{display:grid;gap:.15rem;font-size:.88rem;color:var(--muted)}
+.support-mini b{color:var(--ink);font-size:.95rem}
+.support-mini .linkbtn{justify-self:start}
 
 /* workspace */
 .ws{display:grid;grid-template-columns:240px minmax(0,1fr);gap:2rem;align-items:start}
@@ -308,7 +314,7 @@ details.find p{font-size:.8rem;color:var(--ink);background:var(--surface-2);bord
     <div class="brand-wrap"><button class="brand" data-act="home" aria-label="Virasat home"><b>Virasat</b><span lang="hi">विरासत</span></button><a class="byline" href="https://gauravkhurana.com" target="_blank" rel="noopener noreferrer">by gauravkhurana.com</a></div>
     <button class="privacy-pill" data-act="privacy" aria-label="Nothing leaves this browser. See how."><i></i>Nothing leaves this browser<span class="how">How?</span></button>
     <div class="top-actions">
-      <button class="btn" data-act="load">Import my data</button>
+      <button class="btn" data-act="sample" id="sampleBtn">Explore with sample data</button>
       <button class="btn primary" data-act="export" id="exportBtn">Export my data</button>
     </div>
   </div>
@@ -1051,6 +1057,7 @@ function render(){
   const m = $('#main');
   $('#sampleBar').hidden = !S.sample;
   $('#exportBtn').hidden = S.view === 'setup' && totalEntries() === 0;
+  $('#sampleBtn').hidden = S.sample || totalEntries() > 0;
   if (S.view === 'setup') m.innerHTML = renderSetup();
   else m.innerHTML = `<div class="ws"><nav class="nav" aria-label="Categories">${renderNav()}</nav><section id="content" style="min-width:0">${renderContent()}</section></div>`;
   const cur = m.querySelector('.nav [aria-current="page"]');
@@ -1120,13 +1127,16 @@ function renderSetup(){
   </section>
   <div class="go">
     <button class="btn primary" data-act="start" ${n ? '' : 'disabled'}>${hasData ? 'Back to my list' : 'Start my list'} (${n} ${n === 1 ? 'category' : 'categories'})</button>
-    <button class="btn" data-act="load">Import my data</button>
-    ${hasData ? '' : '<button class="btn ghost" data-act="sample">Explore with sample data</button>'}
+    ${hasData ? '' : '<button class="btn ghost" data-act="sample">Just looking? Explore with sample data</button>'}
   </div>
   <div class="excel-alt">
     <p><b style="color:var(--ink)">Prefer to fill an Excel yourself?</b> Download a blank template with all categories, dropdowns and filters. The browser is easier, and it never keeps your data either.</p>
     <button class="btn small" data-act="template">Blank Excel template</button>
     <button class="btn small" data-act="sampleXlsx">Sample Excel (made-up data)</button>
+  </div>
+  <div class="excel-alt">
+    <p><b style="color:var(--ink)">Updating your list?</b> Import works only with an Excel file you exported from Virasat earlier, or the Virasat template. Other spreadsheets won't load.</p>
+    <button class="btn small" data-act="load">Import my data</button>
   </div>`;
 }
 
@@ -1512,7 +1522,7 @@ async function importXlsx(file){
   if (!needExcel()) return;
   let wb;
   try { wb = new ExcelJS.Workbook(); await wb.xlsx.load(await file.arrayBuffer()); }
-  catch (err) { console.error(err); toast('That file could not be opened. Choose an .xlsx file saved from Virasat or the template.'); return; }
+  catch (err) { console.error(err); toast('That file could not be opened. Import works only with an Excel (.xlsx) file exported from Virasat, or the Virasat template.'); return; }
   let meta = null; const msh = wb.getWorksheet('_virasat');
   if (msh) { try { meta = JSON.parse(String(msh.getCell('A1').value || '')); } catch (_) {} }
   const st = { mode:meta?.mode || 'me', people:[...(meta?.people || [])], preparedBy:meta?.preparedBy || '', common:{ link:meta?.common?.link || '', docs:meta?.common?.docs || '' }, ids:{ mobiles:[...(meta?.ids?.mobiles || [])], emails:[...(meta?.ids?.emails || [])] }, cats:new Set(), entries:{} };
@@ -1533,7 +1543,7 @@ async function importXlsx(file){
     }
     st.entries[cat.id] = out;
   });
-  if (!found) { toast('No Virasat tabs found in that file. Start from the blank template so the tab names match.'); return; }
+  if (!found) { toast('This isn\'t a Virasat file. Import works only with an Excel file exported from Virasat, or the Virasat template.'); return; }
   if (owners.size) { st.mode = 'family'; for (const o of owners) if (!st.people.includes(o)) st.people.push(o); }
   Object.assign(S, { mode:st.mode, people:st.people, preparedBy:st.preparedBy, common:st.common, ids:st.ids, cats:st.cats, entries:st.entries, sample:false, dirty:false, editing:null });
   const first = selectedCats().find(c => list(c.id).length);
@@ -1820,6 +1830,7 @@ function exportSheet(){
     <button class="choice" data-act="exportPdf"><span class="ck">Best for family</span><b>PDF document</b><span>Easy to read on any phone, and to print. Each record keeps all its details together. It can't be imported back.</span></button>
   </div>
   <div class="field" style="margin-top:1rem"><label for="pdfPass">Password to open the PDF (optional)</label><input class="name-in" id="pdfPass" autocomplete="off" placeholder="Leave blank for no password"><p class="hint">Basic protection. Share the password with family separately. The PDF shows English text only; Hindi and other scripts appear correctly in the Excel file.</p></div>
+  <div class="support-mini"><img src="data:image/png;base64,${UPI_QR}" alt="UPI QR code to support Virasat" width="76" height="76"><div><b>Virasat is free and has no ads.</b><span>If it helps your family, support it with any amount. UPI: <span class="mono">${UPI_ID}</span></span><button class="linkbtn" data-act="support">Show the QR code and options</button></div></div>
   <div class="acts"><button class="btn" data-act="close">Cancel</button></div>`, { keepFocus:true });
   const b = $('#sheet .choice'); if (b) b.focus();
 }
