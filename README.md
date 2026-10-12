@@ -63,4 +63,4 @@ The "How your family claims this" notes are drafts and need checking with each i
 
 ## Licence
 
-All rights reserved for now. A licence will be chosen before the code is made public.
+Copyright (c) 2026 Gaurav Khurana. All rights reserved. The code is public so anyone can check that nothing leaves the browser, but no licence to reuse, copy or redistribute it has been granted yet. The name Virasat and the gauravkhurana.com branding are not covered by any future code licence.
