@@ -103,9 +103,10 @@ a.btn{text-decoration:none}
 .inline-add input,.field input,.field select,.field textarea,.filters select,.name-in{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:.5em .7em;min-width:0;width:100%}
 .inline-add input{width:12rem}
 .field input:focus,.field select:focus,.field textarea:focus,.inline-add input:focus{border-color:var(--peacock);outline:none;box-shadow:0 0 0 3px var(--peacock-soft)}
-.group-h{display:flex;align-items:baseline;justify-content:space-between;margin:1.25rem 0 .6rem;gap:1rem}
+.group-h{display:flex;align-items:center;gap:.75rem;margin:2.25rem 0 .9rem}
+.group-h::after{content:"";flex:1;height:1px;background:var(--line)}
 .group-h:first-child{margin-top:0}
-.group-h h3{font-family:var(--f-body);font-weight:700;font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.group-h h3{font-family:var(--f-display);font-weight:400;font-size:clamp(1.3rem,2.4vw,1.6rem);color:var(--peacock)}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.6rem}
 .tile{position:relative;display:grid;grid-template-columns:auto 1fr;gap:.15rem .65rem;align-items:start;padding:.75rem .85rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);cursor:pointer}
 .tile:hover{border-color:var(--peacock)}
@@ -133,7 +134,7 @@ a.btn{text-decoration:none}
 /* workspace */
 .ws{display:grid;grid-template-columns:240px minmax(0,1fr);gap:2rem;align-items:start}
 .nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);display:grid;gap:.15rem;max-height:calc(100vh - 100px);overflow:auto;padding-bottom:1rem}
-.nav .nh{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:.9rem .6rem .25rem}
+.nav .nh{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--peacock);font-weight:700;margin:1.2rem .6rem .3rem;padding-top:.7rem;border-top:1px solid var(--line)}
 .nav button{display:flex;justify-content:space-between;align-items:center;gap:.5rem;text-align:left;border:0;background:transparent;border-radius:8px;padding:.42rem .6rem;font-size:.92rem}
 .nav button:hover{background:var(--surface-2)}
 .nav button[aria-current="page"]{background:var(--peacock);color:var(--peacock-ink);font-weight:600}
