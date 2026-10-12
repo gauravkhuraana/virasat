@@ -1062,6 +1062,34 @@ function idList(list, label, hint, ph){
   return `<div class="field"><label for="in-${list}">${esc(label)}</label><p class="hint">${esc(hint)}</p><div class="people">${L.map((x, i) => `<span class="chip">${esc(x)}<button data-act="rmId" data-list="${list}" data-i="${i}" aria-label="Remove ${esc(x)}">×</button></span>`).join('')}
     <form class="inline-add" data-form="id" data-list="${list}"><input id="in-${list}" type="${list === 'emails' ? 'email' : 'text'}" autocomplete="off" placeholder="${esc(ph)}"><button class="btn" type="submit">Add</button></form></div></div>`;
 }
+function renderShared(){
+  return `<div class="cat-h"><div class="eyebrow">Optional</div><h2>Family & shared details</h2>
+    <p>All of this is optional and stays in this browser like everything else. It makes the file more useful for your family.</p></div>
+  <section class="step">
+    <div class="step-h"><div class="k">People</div><h2>Who is this list for?</h2><p>For a family, each entry gets a "Belongs to" field you can filter by.</p></div>
+    <div>
+      <div class="seg" role="group" aria-label="Who is this for">
+        <button data-act="mode" data-mode="me" aria-pressed="${!isFamily()}">Just me</button>
+        <button data-act="mode" data-mode="family" aria-pressed="${isFamily()}">My family</button>
+      </div>
+      ${isFamily() ? `<div class="people">${S.people.map((p, i) => `<span class="chip">${esc(p)}<button data-act="rmPerson" data-i="${i}" aria-label="Remove ${esc(p)}">×</button></span>`).join('')}
+        <form class="inline-add" data-form="person"><input id="personIn" placeholder="Add a name, e.g. Papa" aria-label="Add a family member"><button class="btn" type="submit">Add</button></form></div>` : ''}
+      <div style="margin-top:1rem;max-width:22rem" class="field"><label for="preparedBy">Your name (shown on the file)</label><input class="name-in" id="preparedBy" value="${esc(S.preparedBy)}" placeholder="Optional"></div>
+    </div>
+  </section>
+  <section class="step">
+    <div class="step-h"><div class="k">Shared</div><h2>Papers, phones and email</h2><p>Set these once. Any entry that leaves them blank uses these.</p></div>
+    <div><div class="grid" style="max-width:46rem">
+      <div class="field"><label for="commonLink">One folder with all scanned documents</label><input class="name-in" id="commonLink" inputmode="url" autocomplete="off" value="${esc(S.common.link)}" placeholder="https://drive.google.com/drive/folders/..."><p class="hint">Make one Google Drive or OneDrive folder with a sub-folder per category, and share it only with family. Virasat keeps the link, never the files.</p></div>
+      <div class="field"><label for="commonDocs">Where the original papers are kept</label><input class="name-in" id="commonDocs" autocomplete="off" value="${esc(S.common.docs)}" placeholder="Steel almirah, bedroom, blue file"></div>
+    </div>
+    <div class="idlists">
+      ${idList('mobiles', 'Mobile numbers linked to accounts', 'Banks and apps send OTPs here. Your family should keep these SIMs active.', 'Add a number, e.g. Ramesh 98100 00011')}
+      ${idList('emails', 'Email addresses linked to accounts', 'Statements and policy documents arrive here. Add each one you use.', 'Add an email')}
+    </div></div>
+  </section>
+  <div class="go"><button class="btn primary" data-act="view" data-v="summary">Done</button></div>`;
+}
 function renderSetup(){
   const counts = id => list(id).length;
   const groups = GROUPS.map(g => {
@@ -1076,7 +1104,7 @@ function renderSetup(){
   <section class="hero">
     <div>
       <h1>Leave your family a <em>map</em>, not a mystery.</h1>
-      <p class="lede">List your LIC policies, bank accounts, mutual funds, property and loans in one place. Download it as an Excel file your family can open when they need it. Every field is optional.</p>
+      <p class="lede">List your LIC policies, bank accounts, mutual funds, property and loans in one place. Export it as an Excel file or PDF your family can open when they need it. Every field is optional.</p>
     </div>
     <div class="proof">
       <div><span class="dot">1</span><span><b>No sign-up, no server</b>What you type stays in this browser tab.</span></div>
@@ -1085,30 +1113,7 @@ function renderSetup(){
     </div>
   </section>
   <section class="step">
-    <div class="step-h"><div class="k">Step 1</div><h2>Who is this for?</h2><p>For a family, each entry gets a "Belongs to" column you can filter.</p></div>
-    <div>
-      <div class="seg" role="group" aria-label="Who is this for">
-        <button data-act="mode" data-mode="me" aria-pressed="${!isFamily()}">Just me</button>
-        <button data-act="mode" data-mode="family" aria-pressed="${isFamily()}">My family</button>
-      </div>
-      ${isFamily() ? `<div class="people">${S.people.map((p, i) => `<span class="chip">${esc(p)}<button data-act="rmPerson" data-i="${i}" aria-label="Remove ${esc(p)}">×</button></span>`).join('')}
-        <form class="inline-add" data-form="person"><input id="personIn" placeholder="Add a name, e.g. Papa" aria-label="Add a family member"><button class="btn" type="submit">Add</button></form></div>` : ''}
-      <div style="margin-top:1rem;max-width:22rem" class="field"><label for="preparedBy">Your name (shown on the file)</label><input class="name-in" id="preparedBy" value="${esc(S.preparedBy)}" placeholder="Optional"></div>
-    </div>
-  </section>
-  <section class="step">
-    <div class="step-h"><div class="k">Step 2</div><h2>Shared details</h2><p>Optional. Set these once. Any entry that leaves them blank uses these.</p></div>
-    <div><div class="grid" style="max-width:46rem">
-      <div class="field"><label for="commonLink">One folder with all scanned documents</label><input class="name-in" id="commonLink" inputmode="url" autocomplete="off" value="${esc(S.common.link)}" placeholder="https://drive.google.com/drive/folders/..."><p class="hint">Make one Google Drive or OneDrive folder with a sub-folder per category, and share it only with family. Virasat keeps the link, never the files.</p></div>
-      <div class="field"><label for="commonDocs">Where the original papers are kept</label><input class="name-in" id="commonDocs" autocomplete="off" value="${esc(S.common.docs)}" placeholder="Steel almirah, bedroom, blue file"></div>
-    </div>
-    <div class="idlists">
-      ${idList('mobiles', 'Mobile numbers linked to accounts', 'Banks and apps send OTPs here. Your family should keep these SIMs active.', 'Add a number, e.g. Ramesh 98100 00011')}
-      ${idList('emails', 'Email addresses linked to accounts', 'Statements and policy documents arrive here. Add each one you use.', 'Add an email')}
-    </div></div>
-  </section>
-  <section class="step">
-    <div class="step-h"><div class="k">Step 3</div><h2>What do you have?</h2><p>Only these tabs appear in the app and in your Excel. You can change this later.</p>
+    <div class="step-h"><div class="k">Start here</div><h2>What do you have?</h2><p>Only these tabs appear in the app and in your Excel. You can change this later.</p>
       <button class="btn small ghost" style="margin-top:.5rem;padding-left:0" data-act="view" data-v="find">Not sure what you own? Find it &rarr;</button>
       <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.8rem"><button class="btn small" data-act="pick" data-p="common">Common picks</button><button class="btn small" data-act="pick" data-p="all">All</button><button class="btn small ghost" data-act="pick" data-p="none">None</button></div></div>
     <div>${groups}</div>
@@ -1129,7 +1134,8 @@ function renderNav(){
   const v = S.view, up = upcomingItems().filter(i => i.days >= 0 && i.days <= 30).length;
   let h = `<button data-act="view" data-v="summary" ${v === 'summary' ? 'aria-current="page"' : ''}>Overview</button>
     <button data-act="view" data-v="upcoming" ${v === 'upcoming' ? 'aria-current="page"' : ''}><span>Upcoming dates</span>${up ? `<span class="n hot">${up}</span>` : ''}</button>
-    <button data-act="view" data-v="find" ${v === 'find' ? 'aria-current="page"' : ''}>Find my details</button>`;
+    <button data-act="view" data-v="find" ${v === 'find' ? 'aria-current="page"' : ''}>Find my details</button>
+    <button data-act="view" data-v="shared" ${v === 'shared' ? 'aria-current="page"' : ''}>Family & shared details</button>`;
   for (const g of GROUPS) {
     const cs = selectedCats().filter(c => c.g === g); if (!cs.length) continue;
     h += `<div class="nh">${g}</div>` + cs.map(c => `<button data-act="view" data-v="cat:${c.id}" ${v === 'cat:' + c.id ? 'aria-current="page"' : ''}><span>${esc(c.name)}</span><span class="n">${list(c.id).length || ''}</span></button>`).join('');
@@ -1142,6 +1148,7 @@ function renderContent(){
   if (S.view === 'summary') return renderSummary();
   if (S.view === 'find') return renderFind();
   if (S.view === 'glossary') return renderGlossary();
+  if (S.view === 'shared') return renderShared();
   const cat = CAT[S.view.slice(4)];
   return cat ? renderCat(cat) : '';
 }
@@ -1668,7 +1675,7 @@ const ACTIONS = {
     for (const c of CATS) if (list(c.id).length) S.cats.add(c.id); render(); },
   start(){ if (isFamily() && !S.people.length) S.people = [S.preparedBy || 'Me'];
     if (!S.cats.size) return; const v = S.view; S.view = selectedCats().some(c => list(c.id).length) ? 'summary' : 'cat:' + selectedCats()[0].id; if (v !== S.view) window.scrollTo(0, 0); render(); },
-  view(b){ const v = b.dataset.v; guard(() => { S.editing = null; const was = S.view; S.view = v; render(); const c = $('#content'); if (was === 'setup' || (c && c.getBoundingClientRect().top < 0)) window.scrollTo(0, 0); }); },
+  view(b){ const v = b.dataset.v; if (!$('#overlay').hidden) closeSheet(); guard(() => { S.editing = null; const was = S.view; S.view = v; render(); const c = $('#content'); if (was === 'setup' || (c && c.getBoundingClientRect().top < 0)) window.scrollTo(0, 0); }); },
   add(){ guard(() => { S.editing = { cat:S.view.slice(4), id:'new', draft:{} }; render(); focusForm(); }); },
   edit(b){ const id = b.dataset.id; guard(() => { S.editing = { cat:S.view.slice(4), id }; render(); focusForm(); }); },
   cancel(){ hideUnsaved(); S.editing = null; render(); },
@@ -1800,6 +1807,14 @@ function buildPdf(st, password){
 function exportSheet(){
   openSheet(`<h2 id="sheetTitle">Export my data</h2>
   <p>Both files are made here in your browser and saved straight to your device.</p>
+  <details class="findbox" style="margin-top:.8rem" ${S.preparedBy || S.common.docs || S.common.link ? '' : 'open'}><summary>Before you export: details for your family (optional)</summary>
+    <div class="grid" style="margin-top:.7rem">
+      <div class="field"><label for="exName">Your name (shown on the file)</label><input class="name-in" id="exName" autocomplete="off" value="${esc(S.preparedBy)}"></div>
+      <div class="field"><label for="exDocs">Where the original papers are kept</label><input class="name-in" id="exDocs" autocomplete="off" value="${esc(S.common.docs)}" placeholder="Steel almirah, bedroom, blue file"></div>
+      <div class="field"><label for="exLink">Shared folder with scanned documents</label><input class="name-in" id="exLink" inputmode="url" autocomplete="off" value="${esc(S.common.link)}" placeholder="https://drive.google.com/drive/folders/..."></div>
+    </div>
+    <p class="nom">Tip: keep this file in a Google Drive or OneDrive folder that only your family can open, lock it with a password, and tell them the password separately. <button class="linkbtn" data-act="view" data-v="shared">Add family members, phones and emails</button></p>
+  </details>
   <div class="choices">
     <button class="choice" data-act="exportXlsx"><span class="ck">Best for keeping</span><b>Excel file</b><span>Every detail, with filters and dropdowns. Import it back next year to update your list.</span></button>
     <button class="choice" data-act="exportPdf"><span class="ck">Best for family</span><b>PDF document</b><span>Easy to read on any phone, and to print. Each record keeps all its details together. It can't be imported back.</span></button>
@@ -2008,7 +2023,7 @@ function commonBlock(){
   const c = S.common, ids = S.ids, has = c.link || c.docs || ids.mobiles.length || ids.emails.length, href = safeHref(c.link);
   return `<div class="tip" style="margin-bottom:1.25rem"><b>Shared</b><span>${has
     ? `${c.docs ? `Originals: ${esc(c.docs)}. ` : ''}${c.link ? `Scans: ${href ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(c.link.length > 48 ? c.link.slice(0, 45) + '...' : c.link)}</a>` : esc(c.link)}. ` : ''}${ids.mobiles.length ? `OTP numbers: ${esc(ids.mobiles.join(', '))}. ` : ''}${ids.emails.length ? `Emails: ${esc(ids.emails.join(', '))}. ` : ''}Entries that leave these blank use them. `
-    : 'Keep every scan in one shared folder and set it once. Entries without their own link will point to it. '}<button class="btn small ghost" data-act="home">${has ? 'Change' : 'Set it up'}</button></span></div>`;
+    : 'Listing for your parents or spouse too, or keeping scans in one folder? Add these once. '}<button class="btn small ghost" data-act="view" data-v="shared">${has ? 'Change' : 'Set it up'}</button></span></div>`;
 }
 function renderFind(){
   return `<div class="cat-h"><div class="eyebrow">Help</div><h2>Find my details</h2>
@@ -2060,6 +2075,9 @@ document.addEventListener('input', e => {
   if (t.id === 'preparedBy') { S.preparedBy = t.value; return; }
   if (t.id === 'commonLink') { S.common.link = t.value.trim(); return; }
   if (t.id === 'commonDocs') { S.common.docs = t.value.trim(); return; }
+  if (t.id === 'exName') { S.preparedBy = t.value; return; }
+  if (t.id === 'exDocs') { S.common.docs = t.value.trim(); return; }
+  if (t.id === 'exLink') { S.common.link = t.value.trim(); return; }
   if (t.id === 'glossQ') { S.glossQ = t.value; filterGloss(); return; }
   if (t.matches('[data-fb]')) { updateFb(); return; }
   const form = t.closest('form[data-form="entry"]'); if (!form) return;

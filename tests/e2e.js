@@ -12,6 +12,8 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   const url = 'file://' + path.resolve('dist/site/index.html');
   await page.goto(url);
   await page.screenshot({ path: OUT + '/1-setup.png', fullPage: false });
+  const setupClean = (await page.$$('#commonLink, #personIn, [data-act="mode"]')).length === 0;
+  console.log('setup asks only for categories:', setupClean);
 
   // sample
   await page.click('[data-act="sample"]');
@@ -95,6 +97,11 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   await page.screenshot({ path: OUT + '/13-bankform.png', fullPage: true });
   await page.click('[data-act="cancel"]');
 
+  // family & shared details page
+  await page.click('[data-v="shared"]');
+  const sharedOk = await page.isVisible('.idlists') && await page.isVisible('#commonLink');
+  console.log('shared details page ok:', sharedOk);
+  await page.screenshot({ path: OUT + '/16-shared.png' });
   // feedback and support
   await page.click('footer [data-act="feedback"]');
   await page.selectOption('#fbType', 'feature');
@@ -165,6 +172,8 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   if (errors.length) failures.push('console errors: ' + errors.join(' | '));
   if (requests.length) failures.push('page made outgoing requests: ' + requests.join(', '));
   if (!fbOk) failures.push('feedback link is wrong');
+  if (!setupClean) failures.push('setup still asks for names or shared details');
+  if (!sharedOk) failures.push('shared details page missing');
   if (!qrOk) failures.push('UPI QR image did not render');
   if (failures.length) { console.error('FAILED\n- ' + failures.join('\n- ')); process.exit(1); }
   console.log('ALL CHECKS PASSED');
