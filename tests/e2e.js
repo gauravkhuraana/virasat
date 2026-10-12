@@ -95,6 +95,21 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   await page.screenshot({ path: OUT + '/13-bankform.png', fullPage: true });
   await page.click('[data-act="cancel"]');
 
+  // feedback and support
+  await page.click('footer [data-act="feedback"]');
+  await page.selectOption('#fbType', 'feature');
+  await page.fill('#fbTitle', 'Add Hindi labels'); await page.fill('#fbDetails', 'Would help my parents');
+  const fbHref = await page.getAttribute('#fbGo', 'href');
+  const fbOk = fbHref.startsWith('https://github.com/gauravkhuraana/virasat/issues/new?') && fbHref.includes('template=feature.yml') && fbHref.includes('Add+Hindi+labels') && fbHref.includes('device=Virasat');
+  console.log('feedback link ok:', fbOk);
+  await page.screenshot({ path: OUT + '/14-feedback.png' });
+  await page.keyboard.press('Escape');
+  await page.click('footer [data-act="support"]');
+  const qrOk = await page.$eval('.upi img', i => i.complete && i.naturalWidth > 100);
+  console.log('upi qr rendered:', qrOk);
+  await page.screenshot({ path: OUT + '/15-support.png' });
+  await page.keyboard.press('Escape');
+
   // template + sample xlsx
   await page.click('[data-act="home"]');
   const tpl = await dl('[data-act="template"]');
@@ -149,6 +164,8 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   if (overflow || overflow2) failures.push('phone layout scrolls sideways');
   if (errors.length) failures.push('console errors: ' + errors.join(' | '));
   if (requests.length) failures.push('page made outgoing requests: ' + requests.join(', '));
+  if (!fbOk) failures.push('feedback link is wrong');
+  if (!qrOk) failures.push('UPI QR image did not render');
   if (failures.length) { console.error('FAILED\n- ' + failures.join('\n- ')); process.exit(1); }
   console.log('ALL CHECKS PASSED');
 })().catch(err => { console.error(err); process.exit(1); });

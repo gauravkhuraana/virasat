@@ -1,0 +1,17 @@
+name: Wrong or unclear information
+description: A claim step, glossary entry, link or tip that is wrong, outdated or confusing
+title: "[Content] "
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: details
+    attributes:
+      label: What is wrong or unclear?
+      description: Which page or category, what it says, and what it should say. A link to an official source helps a lot.
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      description: Filled in automatically when you report from the app.

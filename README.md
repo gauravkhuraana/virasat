@@ -22,6 +22,8 @@ Official home: **[gauravkhurana.com/virasat](https://gauravkhurana.com/virasat)*
 - Export to Excel (one sheet per category, filters, dropdowns, Summary, Upcoming, "Read me first") and import the same file back to update it
 - Export to PDF (summary, upcoming dates, every record as one block, optional password)
 - Import CSV or Excel exports from brokers and fund apps into mutual funds, holdings, demat, bank, FD and bond categories, with automatic column matching
+- "Report a bug or idea": composes a GitHub issue (bug, idea or content correction) with browser details filled in; screenshots up to 10 MB are attached on GitHub, and GitHub sign-in keeps out spam
+- "Support Virasat": UPI QR code and ID for voluntary contributions
 - Help built in: "Where to find these details", "Add or update the nominee", per-field "Where do I find this?", a glossary and a "Find my details" page (AIS, CAS, credit report, EPFO, DigiLocker, UDGAM)
 
 ## Project layout
