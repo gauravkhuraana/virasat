@@ -250,6 +250,8 @@ footer .foot-acts{flex-basis:100%;display:flex;justify-content:center;flex-wrap:
 .upi-id span{display:block;font-size:.74rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
 .upi-id b{font-size:1.15rem;color:var(--ink);word-break:break-all}
 .upi-acts{display:flex;gap:.4rem;flex-wrap:wrap}
+.social{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr));gap:.4rem;margin-top:.6rem}
+.social .btn{justify-content:space-between;white-space:normal}
 .linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--peacock);font-weight:600;text-decoration:underline;cursor:pointer}
 @media (max-width:520px){.upi{grid-template-columns:1fr;justify-items:center;text-align:center}.upi-acts{justify-content:center}}
 footer .site{flex-basis:100%;text-align:center;margin-top:1rem;font-weight:600;color:var(--peacock);text-decoration:none;letter-spacing:.02em}
@@ -2313,6 +2315,14 @@ function pdfDoneSheet(locked){
 const APP_VERSION = '0.5.0';
 const REPO_URL = 'https://github.com/gauravkhuraana/virasat';
 const UPI_ID = 'khuranagaurav@upi';
+const SOCIAL = [
+  ['Subscribe on YouTube', 'https://www.youtube.com/@Udzial?sub_confirmation=1'],
+  ['Follow on LinkedIn', 'https://www.linkedin.com/in/gauravkhuraana/'],
+  ['Join the WhatsApp channel', 'https://whatsapp.com/channel/0029Vb6pKpPElagzl4OTqG2s'],
+  ['Follow on Medium', 'https://medium.com/@gauravkhuraana'],
+  ['Get the newsletter', 'https://gauravkhurana.com/newsletter/'],
+  ['Star Virasat on GitHub', 'https://github.com/gauravkhuraana/virasat'],
+];
 const FB_TYPES = {
   bug:{ l:'Something is broken (bug)', t:'bug.yml', p:'[Bug] ' },
   feature:{ l:'Idea or new feature', t:'feature.yml', p:'[Idea] ' },
@@ -2367,7 +2377,9 @@ function supportSheet(){
       <p class="hint">Scan with any UPI app: Google Pay, PhonePe, Paytm or BHIM. Payments go straight to Gaurav Khurana.</p>
     </div>
   </div>
-  <p>Can't pay? Sharing Virasat with one family that needs it helps just as much.</p>
+  <h3>Free ways to support</h3>
+  <p>Follow along for more free tools like this one. Sharing Virasat with a family that needs it helps just as much.</p>
+  <div class="social">${SOCIAL.map(([l, u]) => `<a class="btn small" href="${u}" target="_blank" rel="noopener noreferrer"><span>${esc(l)}</span><span aria-hidden="true">&#8599;</span></a>`).join('')}</div>
   <div class="acts"><button class="btn primary" data-act="close">Close</button></div>`);
 }
 

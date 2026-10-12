@@ -114,6 +114,8 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   await page.click('footer [data-act="support"]');
   const qrOk = await page.$eval('.upi img', i => i.complete && i.naturalWidth > 100);
   console.log('upi qr rendered:', qrOk);
+  const socialOk = (await page.$$('.social a')).length === 6 && !!(await page.$('.social a[href="https://www.youtube.com/@Udzial?sub_confirmation=1"]'));
+  console.log('social links ok:', socialOk);
   await page.screenshot({ path: OUT + '/15-support.png' });
   await page.keyboard.press('Escape');
 
@@ -175,6 +177,7 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   if (!setupClean) failures.push('setup still asks for names or shared details');
   if (!sharedOk) failures.push('shared details page missing');
   if (!qrOk) failures.push('UPI QR image did not render');
+  if (!socialOk) failures.push('social links missing on the support screen');
   if (failures.length) { console.error('FAILED\n- ' + failures.join('\n- ')); process.exit(1); }
   console.log('ALL CHECKS PASSED');
 })().catch(err => { console.error(err); process.exit(1); });
