@@ -1,0 +1,1998 @@
+<title>Virasat</title>
+<!--@HEAD-->
+<style>
+/* Layout: a working ledger. Sticky top bar, left index of categories (horizontal strip on phones), one category open at a time. */
+:root{
+  --paper:#F3F6F5; --surface:#FFFFFF; --surface-2:#EAF0EF; --ink:#13262B; --muted:#56696D; --line:#D5DFDD;
+  --peacock:#0C5862; --peacock-ink:#FFFFFF; --peacock-soft:#DDEDEE;
+  --marigold:#C77F00; --marigold-soft:#FCEFD4;
+  --danger:#B3261E; --danger-soft:#FBE6E3; --ok:#1C7148; --ok-soft:#E0F2E8;
+  --shadow:0 1px 2px rgba(19,38,43,.06),0 4px 14px rgba(19,38,43,.06);
+  --f-display:'Young Serif',Georgia,'Times New Roman',serif;
+  --f-body:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0E1719; --surface:#152226; --surface-2:#1B2B30; --ink:#E5EEEC; --muted:#93A6A9; --line:#29393D;
+  --peacock:#62C3CB; --peacock-ink:#06272B; --peacock-soft:#173236;
+  --marigold:#F0B23E; --marigold-soft:#372B12;
+  --danger:#FF8C82; --danger-soft:#3A1E1B; --ok:#72D3A0; --ok-soft:#163122;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0E1719; --surface:#152226; --surface-2:#1B2B30; --ink:#E5EEEC; --muted:#93A6A9; --line:#29393D;
+  --peacock:#62C3CB; --peacock-ink:#06272B; --peacock-soft:#173236;
+  --marigold:#F0B23E; --marigold-soft:#372B12;
+  --danger:#FF8C82; --danger-soft:#3A1E1B; --ok:#72D3A0; --ok-soft:#163122;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0;line-height:1.15}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--peacock);outline-offset:2px}
+a{color:var(--peacock)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:.4em;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:.5em .9em;font-weight:600;font-size:.92rem;white-space:nowrap}
+.btn:hover{border-color:var(--peacock)}
+.btn.primary{background:var(--peacock);color:var(--peacock-ink);border-color:var(--peacock)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--peacock)}
+.btn.ghost:hover{background:var(--peacock-soft)}
+.btn.danger{color:var(--danger);border-color:transparent;background:transparent}
+.btn.danger.armed{background:var(--danger);color:#fff}
+.btn.small{padding:.3em .65em;font-size:.85rem}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1200px;margin:0 auto;padding:.7rem 16px;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:.5rem;background:none;border:0;padding:0;text-decoration:none;color:var(--ink)}
+.brand b{font-family:var(--f-display);font-weight:400;font-size:1.5rem;letter-spacing:.01em}
+.brand span{font-size:.95rem;color:var(--marigold)}
+.brand-wrap{display:grid;gap:0;line-height:1.1}
+.byline{font-size:.74rem;color:var(--muted);text-decoration:none;letter-spacing:.02em}
+.byline:hover{color:var(--peacock);text-decoration:underline}
+.privacy-pill{display:inline-flex;align-items:center;gap:.45em;border:1px solid color-mix(in srgb,var(--ok) 45%,transparent);background:var(--ok-soft);color:var(--ok);border-radius:999px;padding:.3em .45em .3em .8em;font-size:.82rem;font-weight:600;transition:background .15s,border-color .15s}
+.privacy-pill:hover{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 16%,var(--surface))}
+.privacy-pill .how{background:var(--ok);color:var(--surface);border-radius:999px;padding:.05em .55em;font-size:.76rem}
+.privacy-pill i{width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block}
+.top-actions{margin-left:auto;display:flex;gap:.5rem;flex-wrap:wrap}
+.samplebar{background:var(--marigold-soft);border-bottom:1px solid var(--line)}
+.samplebar div{max-width:1200px;margin:0 auto;padding:.55rem 16px;display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;font-size:.9rem}
+
+/* page */
+.wrap{max-width:1200px;margin:0 auto;padding-inline:16px;padding-block:1.5rem 4rem}
+
+/* setup */
+.hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:2rem;align-items:end;padding-block:1rem 2rem;border-bottom:1px solid var(--line)}
+.hero h1{font-size:clamp(2rem,4.6vw,3.3rem);max-width:16ch}
+.hero h1 em{font-style:normal;color:var(--peacock)}
+.hero p.lede{font-size:1.08rem;color:var(--muted);max-width:52ch;margin-top:1rem}
+.proof{display:grid;gap:.6rem;font-size:.92rem}
+.proof div{display:flex;gap:.7rem;align-items:flex-start;padding:.75rem .9rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.proof b{display:block}
+.proof .dot{flex:none;width:22px;height:22px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center;font-size:.8rem;font-weight:700;margin-top:2px}
+.step{padding-block:1.75rem;border-bottom:1px solid var(--line);display:grid;grid-template-columns:200px minmax(0,1fr);gap:1.5rem}
+.step-h .k{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--marigold)}
+.step-h h2{font-size:1.45rem;margin-top:.25rem}
+.step-h p{color:var(--muted);font-size:.9rem;margin-top:.4rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:.6em 1.1em;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--peacock);color:var(--peacock-ink)}
+.people{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:.35rem;background:var(--peacock-soft);border-radius:999px;padding:.25em .4em .25em .8em;font-weight:600;font-size:.9rem}
+.chip button{border:0;background:transparent;width:22px;height:22px;border-radius:50%;line-height:1;color:var(--muted)}
+.chip button:hover{background:var(--surface)}
+.inline-add{display:flex;gap:.4rem}
+.inline-add input,.field input,.field select,.field textarea,.filters select,.name-in{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:.5em .7em;min-width:0;width:100%}
+.inline-add input{width:12rem}
+.field input:focus,.field select:focus,.field textarea:focus,.inline-add input:focus{border-color:var(--peacock);outline:none;box-shadow:0 0 0 3px var(--peacock-soft)}
+.group-h{display:flex;align-items:baseline;justify-content:space-between;margin:1.25rem 0 .6rem;gap:1rem}
+.group-h:first-child{margin-top:0}
+.group-h h3{font-family:var(--f-body);font-weight:700;font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.6rem}
+.tile{position:relative;display:grid;grid-template-columns:auto 1fr;gap:.15rem .65rem;align-items:start;padding:.75rem .85rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);cursor:pointer}
+.tile:hover{border-color:var(--peacock)}
+.tile input{margin:.2rem 0 0;accent-color:var(--peacock);width:17px;height:17px;grid-row:span 2}
+.tile .tn{font-weight:650}
+.tile .td{font-size:.83rem;color:var(--muted);line-height:1.35}
+.tile .tc{position:absolute;top:.55rem;right:.6rem;font-size:.72rem;color:var(--peacock);font-weight:700}
+.tile:has(input:checked){border-color:var(--peacock);background:color-mix(in srgb,var(--peacock-soft) 55%,var(--surface))}
+.go{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;padding-block:1.75rem}
+.go .btn.primary{font-size:1rem;padding:.75em 1.3em}
+.excel-alt{margin-top:.5rem;padding:1rem 1.1rem;border:1px dashed var(--line);border-radius:var(--r);display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;align-items:center;font-size:.92rem}
+.excel-alt p{flex:1 1 320px;color:var(--muted)}
+
+/* workspace */
+.ws{display:grid;grid-template-columns:240px minmax(0,1fr);gap:2rem;align-items:start}
+.nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);display:grid;gap:.15rem;max-height:calc(100vh - 100px);overflow:auto;padding-bottom:1rem}
+.nav .nh{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:.9rem .6rem .25rem}
+.nav button{display:flex;justify-content:space-between;align-items:center;gap:.5rem;text-align:left;border:0;background:transparent;border-radius:8px;padding:.42rem .6rem;font-size:.92rem}
+.nav button:hover{background:var(--surface-2)}
+.nav button[aria-current="page"]{background:var(--peacock);color:var(--peacock-ink);font-weight:600}
+.nav .n{flex:none;font-family:var(--f-mono);font-size:.78rem;opacity:.8}
+.nav .n.hot{background:var(--marigold-soft);color:var(--marigold);border-radius:999px;padding:0 .45rem;opacity:1;font-weight:600}
+.nav button[aria-current="page"] .n.hot{background:var(--marigold-soft);color:var(--marigold)}
+.nav .edit{color:var(--peacock);font-weight:600;margin-top:.5rem}
+
+.cat-h{display:grid;gap:.4rem;margin-bottom:1.25rem}
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--marigold)}
+.cat-h h2{font-size:clamp(1.6rem,3vw,2.1rem)}
+.cat-h p{color:var(--muted);max-width:62ch}
+.tip{display:flex;gap:.6rem;align-items:flex-start;background:var(--surface-2);border-radius:8px;padding:.6rem .8rem;font-size:.88rem;max-width:70ch}
+.tip b{color:var(--peacock);flex:none}
+.toolbar{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin:1rem 0}
+.list{display:grid;gap:.6rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:.85rem 1rem;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.3rem 1rem;align-items:start}
+.card .ct{font-weight:700;font-size:1.02rem}
+.card .cs{font-size:.88rem;color:var(--muted)}
+.facts{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:.35rem 1.2rem;font-size:.86rem;margin-top:.25rem}
+.facts span{color:var(--muted)}
+.facts b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.owner-tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--surface-2);color:var(--muted);border-radius:4px;padding:.05rem .4rem;margin-right:.4rem;vertical-align:2px}
+.pill{display:inline-flex;align-items:center;gap:.3em;border-radius:999px;padding:.12em .6em;font-size:.78rem;font-weight:700;white-space:nowrap}
+.pill.late{background:var(--danger-soft);color:var(--danger)}
+.pill.soon{background:var(--marigold-soft);color:var(--marigold)}
+.pill.near{background:var(--peacock-soft);color:var(--peacock)}
+.pill.later{background:var(--surface-2);color:var(--muted)}
+.empty{border:1px dashed var(--line);border-radius:var(--r);padding:2rem 1.25rem;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-size:1.05rem;margin-bottom:.3rem}
+
+/* form */
+.form{background:var(--surface);border:1.5px solid var(--peacock);border-radius:var(--r);padding:1rem;box-shadow:var(--shadow);display:grid;gap:1rem}
+.form-h{display:flex;justify-content:space-between;align-items:baseline;gap:1rem}
+.form-h h3{font-size:1.15rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(210px,100%),1fr));gap:.8rem 1rem}
+.step > *{min-width:0}
+.field{display:grid;gap:.25rem;align-content:start;min-width:0}
+.field.wide{grid-column:1/-1}
+.field label{font-size:.82rem;font-weight:650;color:var(--muted)}
+.field textarea{resize:vertical;min-height:2.6em}
+.money{position:relative}
+.money span{position:absolute;left:.7em;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.money input{padding-left:1.6em}
+.hint{font-size:.78rem;color:var(--muted);line-height:1.35}
+.hint:empty{display:none}
+.warn{font-size:.8rem;color:var(--danger);background:var(--danger-soft);border-radius:6px;padding:.3rem .5rem;line-height:1.35}
+details.more{border-top:1px solid var(--line);padding-top:.75rem}
+details.more summary{cursor:pointer;font-weight:650;color:var(--peacock);list-style:none;display:flex;gap:.4rem;align-items:center}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::before{content:"+";display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;background:var(--peacock-soft);font-weight:700}
+details.more[open] summary::before{content:"−"}
+details.more .grid{margin-top:.8rem}
+.form-f{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding-top:.8rem}
+.form-f .sp{flex:1}
+.claim{margin-top:1.75rem;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:.85rem 1rem}
+.claim summary{cursor:pointer;font-weight:650}
+.claim p{margin-top:.5rem;color:var(--muted);font-size:.92rem;max-width:70ch}
+.claim .draft{font-size:.75rem;font-weight:700;color:var(--marigold);text-transform:uppercase;letter-spacing:.06em;margin-left:.4rem}
+
+/* upcoming */
+.filters{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin:1rem 0}
+.filters select{width:auto}
+.month{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:1.2rem 0 .4rem;padding-bottom:.3rem;border-bottom:1px solid var(--line)}
+.due{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:.9rem;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:.65rem .9rem;margin-bottom:.45rem}
+.due .d{text-align:center;border-right:1px solid var(--line);padding-right:.8rem}
+.due .d b{display:block;font-family:var(--f-display);font-size:1.5rem;line-height:1;font-weight:400}
+.due .d span{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.due .w{min-width:0}
+.due .w b{font-weight:650}
+.due .w .s{font-size:.85rem;color:var(--muted)}
+.due .r{display:grid;justify-items:end;gap:.25rem;font-size:.85rem}
+.due .r .amt{font-weight:650;font-variant-numeric:tabular-nums}
+.due a{font-size:.8rem;font-weight:600;text-decoration:none}
+.due a:hover{text-decoration:underline}
+.note{font-size:.85rem;color:var(--muted);max-width:70ch}
+
+/* summary */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.6rem;margin:1rem 0 1.5rem}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:.85rem 1rem}
+.stat span{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat b{display:block;font-family:var(--f-display);font-weight:400;font-size:1.55rem;margin-top:.2rem;font-variant-numeric:tabular-nums}
+.stat.debt b{color:var(--danger)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:.55rem .8rem;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;background:var(--surface-2)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+tr.clickable{cursor:pointer}
+tr.clickable:hover td{background:var(--surface-2)}
+
+/* overlay */
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(10,20,22,.45);display:grid;place-items:center;padding:16px}
+.sheet{background:var(--surface);border-radius:14px;max-width:640px;width:100%;max-height:min(86vh,760px);overflow:auto;padding:1.4rem 1.4rem 1.2rem;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.sheet h2{font-size:1.6rem;margin-bottom:.6rem}
+.sheet h3{font-family:var(--f-body);font-weight:700;font-size:.95rem;margin:1.1rem 0 .3rem}
+.sheet p,.sheet li{color:var(--muted);font-size:.93rem}
+.sheet ul,.sheet ol{padding-left:1.2rem;margin:.3rem 0;display:grid;gap:.35rem}
+.sheet li b{color:var(--ink)}
+.sheet .acts{display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.2rem;flex-wrap:wrap}
+.never{display:flex;flex-wrap:wrap;gap:.4rem;margin:.4rem 0}
+.never span{background:var(--danger-soft);color:var(--danger);border-radius:6px;padding:.15rem .55rem;font-size:.85rem;font-weight:600}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);padding:.6rem 1rem;border-radius:8px;font-weight:600;font-size:.9rem;opacity:0;pointer-events:none;transition:.2s;z-index:60;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translateX(-50%)}
+footer{max-width:1200px;margin:0 auto;padding:1.5rem 16px 2.5rem;color:var(--muted);font-size:.82rem;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:.5rem 1.5rem}
+footer .site{flex-basis:100%;text-align:center;margin-top:1rem;font-weight:600;color:var(--peacock);text-decoration:none;letter-spacing:.02em}
+footer .site:hover{text-decoration:underline}
+
+/* v3: export choice, shared ids */
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.6rem;margin-top:.8rem}
+.choice{display:grid;gap:.3rem;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:.9rem 1rem;color:var(--ink)}
+.choice:hover{border-color:var(--peacock);background:color-mix(in srgb,var(--peacock-soft) 50%,var(--surface))}
+.choice b{font-family:var(--f-display);font-weight:400;font-size:1.3rem}
+.choice span{font-size:.88rem;color:var(--muted)}
+.choice .ck{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--marigold)}
+.idlists{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:1rem;margin-top:1.2rem;max-width:46rem}
+.idlists .people{margin-top:.35rem}
+.nom{color:var(--muted);font-size:.92rem;max-width:75ch;margin-top:.5rem}
+/* v2: unsaved banner, help, import */
+.unsaved{position:fixed;z-index:55;top:calc(env(safe-area-inset-top,0px) + 12px);left:50%;transform:translateX(-50%);width:min(760px,calc(100% - 32px));background:var(--danger-soft);color:var(--ink);border:1px solid var(--danger);border-radius:12px;padding:.8rem 1rem;display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;justify-content:space-between;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.unsaved b{color:var(--danger)}
+.unsaved .ua{display:flex;gap:.4rem;flex-wrap:wrap}
+.form.attention{border-color:var(--danger);box-shadow:0 0 0 4px var(--danger-soft)}
+.terms{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;font-size:.85rem}
+.term{border:1px dashed var(--peacock);background:transparent;color:var(--peacock);border-radius:999px;padding:.1rem .6rem;font-size:.82rem;font-weight:600}
+.term[aria-expanded="true"]{background:var(--peacock);color:var(--peacock-ink);border-style:solid}
+.term-box{background:var(--peacock-soft);border-radius:8px;padding:.6rem .8rem;font-size:.9rem;max-width:70ch}
+.term-box b{color:var(--peacock)}
+.findbox{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:.75rem 1rem;margin-bottom:1rem}
+.findbox summary{cursor:pointer;font-weight:650;color:var(--peacock)}
+.findbox ol{margin:.6rem 0 .2rem;padding-left:1.2rem;display:grid;gap:.35rem;color:var(--muted);font-size:.92rem;max-width:75ch}
+.findbox .links{display:flex;gap:.4rem 1rem;flex-wrap:wrap;font-size:.88rem;font-weight:600;margin-top:.5rem}
+details.find summary{cursor:pointer;font-size:.78rem;color:var(--peacock);font-weight:600;list-style:none;width:max-content}
+details.find summary::-webkit-details-marker{display:none}
+details.find p{font-size:.8rem;color:var(--ink);background:var(--surface-2);border-radius:6px;padding:.35rem .5rem;margin-top:.25rem;line-height:1.4}
+.map{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:.45rem .8rem;align-items:center}
+.map label{font-size:.88rem;font-weight:600;color:var(--ink)}
+.map select,.map input{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:.4em .6em;width:100%;min-width:0}
+.sheet.wide{max-width:760px}
+.sources{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.7rem}
+.src{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:.9rem 1rem;display:grid;gap:.35rem;align-content:start}
+.src h3{font-family:var(--f-body);font-weight:700;font-size:1rem}
+.src .where{font-size:.82rem;color:var(--marigold);font-weight:600}
+.src p{font-size:.9rem;color:var(--muted)}
+.src .covers b{color:var(--ink)}
+.src a{font-size:.88rem;font-weight:600}
+.gloss{display:grid;gap:.5rem;margin:0}
+.gloss div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:.6rem .9rem}
+.gloss dt{font-weight:700}
+.gloss dd{margin:.15rem 0 0;color:var(--muted);font-size:.92rem;max-width:75ch}
+.footnote{font-size:.82rem;color:var(--muted);margin-top:.6rem}
+@media (max-width:520px){.map{grid-template-columns:1fr;gap:.2rem}.map select,.map input{margin-bottom:.4rem}}
+
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr;gap:1.25rem}
+  .step{grid-template-columns:1fr;gap:.9rem}
+  .ws{grid-template-columns:1fr;gap:1rem}
+  .nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 0px);z-index:10;display:flex;overflow-x:auto;max-height:none;gap:.35rem;padding:.5rem 0;margin-inline:-16px;padding-inline:16px;background:var(--paper);border-bottom:1px solid var(--line);scrollbar-width:none}
+  .nav .nh{display:none}
+  .nav button{flex:none;border:1px solid var(--line);background:var(--surface)}
+  .nav .edit{margin-top:0}
+  .top{position:static}
+}
+@media (max-width:520px){
+  .top-actions{margin-left:0;width:100%}
+  .top-actions .btn{flex:1;justify-content:center}
+  .privacy-pill{margin-left:auto}
+  .due{grid-template-columns:48px minmax(0,1fr);}
+  .due .r{grid-column:2;justify-items:start;display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+  .card{grid-template-columns:1fr}
+  .inline-add input{width:100%}
+  .inline-add{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand-wrap"><button class="brand" data-act="home" aria-label="Virasat home"><b>Virasat</b><span lang="hi">विरासत</span></button><a class="byline" href="https://gauravkhurana.com" target="_blank" rel="noopener noreferrer">by gauravkhurana.com</a></div>
+    <button class="privacy-pill" data-act="privacy" aria-label="Nothing leaves this browser. See how."><i></i>Nothing leaves this browser<span class="how">How?</span></button>
+    <div class="top-actions">
+      <button class="btn" data-act="load">Import my data</button>
+      <button class="btn primary" data-act="export" id="exportBtn">Export my data</button>
+    </div>
+  </div>
+</header>
+<div class="samplebar" id="sampleBar" hidden><div><b>Sample data.</b> These people, numbers and policies are made up. <button class="btn small" data-act="fresh">Clear it and start my own list</button></div></div>
+<input type="file" id="fileIn" accept=".xlsx" hidden>
+<input type="file" id="csvIn" accept=".csv,.xlsx,.txt,text/csv" hidden>
+<div class="unsaved" id="unsaved" role="alertdialog" aria-labelledby="unsavedMsg" hidden><div id="unsavedMsg"><b>Unsaved changes</b> in <span data-what></span>. Save them before you move on?</div><div class="ua"><button class="btn primary small" data-act="uSave">Save and continue</button><button class="btn small" data-act="uDiscard">Discard changes</button><button class="btn small ghost" data-act="uStay">Keep editing</button></div></div>
+<main class="wrap" id="main"></main>
+<footer>
+  <span>Virasat keeps nothing. Close this tab and everything you typed is gone, so export your data before you leave.</span>
+  <span>Claim notes are a draft. Check with the institution before relying on them.</span>
+  <a class="site" href="https://gauravkhurana.com" target="_blank" rel="noopener noreferrer">gauravkhurana.com</a>
+</footer>
+<div class="overlay" id="overlay" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!--@LIBS-->
+<script>
+"use strict";
+const OFFLINE = /*@OFFLINE*/false;
+
+/* ---------- category definitions ---------- */
+const F = (k, l, t = 'text', x = {}) => ({ k, l, t, ...x });
+const FREQS = ['Monthly', 'Quarterly', 'Half-yearly', 'Yearly', 'Single / one-time'];
+const YN = ['Yes', 'No', 'Not sure'];
+const MONTHS_IN = { 'Monthly': 1, 'Quarterly': 3, 'Half-yearly': 6, 'Yearly': 12 };
+const PER_YEAR = { 'Monthly': 12, 'Quarterly': 4, 'Half-yearly': 2, 'Yearly': 1 };
+
+const GROUPS = ['Banking', 'Insurance', 'From your employer', 'Investments', 'Retirement', 'Property & valuables', 'Loans & cards', 'Business & digital', 'Will, papers & contacts'];
+
+const CATS = [
+ { id:'will', g:'Will, papers & contacts', name:'Will & documents', sheet:'Will & documents', noun:'record',
+   short:'Your will, executor, and where key papers are kept.',
+   blurb:'Whether a will exists, who the executor is, and where your important papers are kept. Families lose months searching for these.',
+   title:['item'], sub:['location'], common:['link','notes'],
+   fields:[
+    F('item','What is it','select',{key:1,o:['Will','Property papers','Identity documents (PAN, Aadhaar, passport)','Marriage / birth certificates','Income tax returns','Insurance policy bonds','Other']}),
+    F('location','Where it is kept','text',{key:1,ph:'Steel almirah, bedroom, top shelf'}),
+    F('executor','Executor (for a will)','text',{key:1}),
+    F('executorPhone','Executor phone','tel'),
+    F('registered','Will registered?','select',{o:YN}),
+    F('date','Date made or last updated','date'),
+    F('lawyer','Lawyer / witnesses','text'),
+   ],
+   claim:'A registered will is easier to prove, but an unregistered one is still valid in India. Without a will, assets pass by succession law, and heirs may need a legal heir certificate or succession certificate.' },
+
+ { id:'contacts', g:'Will, papers & contacts', name:'Key contacts', sheet:'Key contacts', noun:'contact',
+   short:'CA, lawyer, agent, bank RM, HR: who to call.',
+   blurb:'The people your family should call first. A CA or insurance agent who already knows your affairs saves weeks.',
+   title:['name'], sub:['role'], common:['notes'],
+   fields:[
+    F('name','Name','text',{key:1}),
+    F('role','Role','select',{key:1,o:['Chartered accountant','Lawyer','Insurance agent','Bank relationship manager','Stock broker / advisor','Employer HR','Doctor','Trusted friend / relative','Other']}),
+    F('phone','Phone','tel',{key:1}),
+    F('email','Email','email'),
+    F('helps','What they can help with','text',{key:1,ph:'Has all my ITRs and Form 16s'}),
+   ] },
+
+ { id:'bank', g:'Banking', name:'Bank accounts', sheet:'Bank accounts', noun:'account',
+   short:'Savings, salary, current, NRE/NRO accounts.',
+   blurb:'Every account, including the old salary account you stopped using. Dormant accounts are the most common unclaimed money in India.',
+   title:['bank','type'], sub:['last4','branch'], val:{k:'balance',kind:'asset'},
+   tip:'Search RBI\'s UDGAM portal for deposits that have already gone unclaimed in your family.',
+   fields:[
+    F('bank','Bank','text',{key:1,ph:'SBI, HDFC Bank, ICICI Bank'}),
+    F('type','Account type','select',{key:1,o:['Savings','Salary','Current','NRE','NRO','Joint savings']}),
+    F('last4','Account no. (last 4 digits)','text',{key:1,partial:1,ph:'4521'}),
+    F('balance','Approx. balance','money',{key:1}),
+    F('branch','Branch / IFSC','text'),
+    F('holding','Mode of holding','select',{o:['Single','Joint, either or survivor','Joint, former or survivor','Joint, jointly']}),
+    F('jointWith','Joint holder','text'),
+    F('govtCover','PMJJBY / PMSBY linked?','select',{o:['PMJJBY','PMSBY','Both','None','Not sure'],hint:'These government covers auto-debit ₹436 and ₹20 a year and pay ₹2 lakh each to the nominee. Families often never claim them.'}),
+   ],
+   claim:'The nominee or legal heirs submit the bank\'s claim form with the death certificate and KYC. Deposits unclaimed for 10 years move to RBI\'s DEA Fund and can still be traced on RBI\'s UDGAM portal.' },
+
+ { id:'deposits', g:'Banking', name:'Fixed & recurring deposits', sheet:'FD & RD', noun:'deposit',
+   short:'FDs, RDs, tax-saver and corporate FDs.',
+   blurb:'FDs often sit in a different bank from your main account, and paper receipts get lost.',
+   title:['institution','type'], sub:['ref'], val:{k:'principal',kind:'asset'},
+   fields:[
+    F('institution','Bank / company','text',{key:1}),
+    F('type','Type','select',{key:1,o:['Fixed deposit','Recurring deposit','Tax-saver FD','Corporate FD']}),
+    F('principal','Amount invested','money',{key:1}),
+    F('maturityDate','Maturity date','date',{key:1,remind:'Deposit matures',amt:'maturityAmt'}),
+    F('ref','FD / RD no. (last 4)','text',{partial:1}),
+    F('rate','Interest rate (%)','num'),
+    F('maturityAmt','Maturity amount','money'),
+    F('rdAmt','RD monthly instalment','money',{out:1,freq:'Monthly'}),
+    F('rdDate','Next RD instalment','date',{remind:'RD instalment',amt:'rdAmt',freq:'Monthly'}),
+    F('autoRenew','Auto-renews?','select',{o:YN}),
+   ],
+   claim:'Same as bank accounts: claim form, death certificate and the FD receipt or advice, if available.' },
+
+ { id:'locker', g:'Banking', name:'Bank lockers', sheet:'Lockers', noun:'locker',
+   short:'Which bank, where the key is, what is inside.',
+   blurb:'A locker nobody knows about keeps charging rent until the bank breaks it open.',
+   title:['bank'], sub:['branch','lockerNo'], common:['nominee','contactPerson','contactPhone','notes'],
+   fields:[
+    F('bank','Bank','text',{key:1}),
+    F('branch','Branch','text',{key:1}),
+    F('keyAt','Where the key is kept','text',{key:1}),
+    F('rentDue','Rent due date','date',{key:1,remind:'Locker rent due',amt:'rent',freq:'Yearly'}),
+    F('lockerNo','Locker no.','text'),
+    F('jointWith','Joint hirer','text'),
+    F('rent','Annual rent','money',{out:1,freq:'Yearly'}),
+    F('contents','Contents (brief)','note',{ph:'Gold jewellery, property papers'}),
+   ],
+   claim:'The nominee or joint hirer can access the locker after the bank verifies the death certificate. Without a nominee, the bank asks for legal heir documents.' },
+
+ { id:'life', g:'Insurance', name:'Life insurance (LIC & others)', sheet:'Life insurance', noun:'policy',
+   short:'LIC, endowment, money-back, ULIP policies.',
+   blurb:'Endowment, money-back, whole life and ULIP policies from LIC or private insurers. Note the plan name: it is what the insurer asks for first.',
+   title:['insurer','plan'], sub:['policyNo'], val:{k:'sumAssured',kind:'cover'},
+   fields:[
+    F('insurer','Insurer','text',{key:1,ph:'LIC, HDFC Life, SBI Life'}),
+    F('plan','Plan name','text',{key:1,ph:'Jeevan Anand'}),
+    F('policyNo','Policy no.','text',{key:1,idok:1}),
+    F('sumAssured','Sum assured','money',{key:1}),
+    F('premium','Premium amount','money',{key:1,out:1,freqKey:'freq'}),
+    F('freq','Premium frequency','select',{key:1,o:FREQS}),
+    F('dueDate','Next premium due','date',{key:1,remind:'Premium due',amt:'premium',freqKey:'freq'}),
+    F('insured','Life assured (whose life)','text'),
+    F('maturityDate','Maturity date','date',{remind:'Policy matures',amt:'maturityAmt'}),
+    F('maturityAmt','Expected maturity amount','money'),
+    F('agent','Agent name & phone','text'),
+   ],
+   claim:'The nominee files a death claim with the insurer: claim form, death certificate, the policy bond or a copy, nominee ID and bank details. LIC also has an online claim tracker.' },
+
+ { id:'term', g:'Insurance', name:'Term insurance', sheet:'Term insurance', noun:'policy',
+   short:'Pure life cover, including through work or a loan.',
+   blurb:'Term plans pay only on death, so families who don\'t know the policy exists never claim it.',
+   title:['insurer'], sub:['policyNo'], val:{k:'sumAssured',kind:'cover'},
+   fields:[
+    F('insurer','Insurer','text',{key:1,ph:'HDFC Life, Max Life, ICICI Pru'}),
+    F('policyNo','Policy no.','text',{key:1,idok:1}),
+    F('sumAssured','Cover amount','money',{key:1}),
+    F('premium','Premium amount','money',{key:1,out:1,freqKey:'freq'}),
+    F('freq','Premium frequency','select',{o:FREQS}),
+    F('dueDate','Next premium due','date',{key:1,remind:'Term premium due',amt:'premium',freqKey:'freq'}),
+    F('coverTill','Cover ends on','date'),
+    F('source','How you got it','select',{o:['Bought myself','Through employer','Linked to a loan','Bank / card freebie']}),
+    F('riders','Riders','text',{ph:'Accidental death, critical illness'}),
+   ],
+   claim:'Same documents as any life claim. Claims in the first three years can face extra scrutiny, so keep proposal form copies with the policy.' },
+
+ { id:'health', g:'Insurance', name:'Health insurance', sheet:'Health insurance', noun:'policy',
+   short:'Personal, family floater and employer cover.',
+   blurb:'The details a hospital desk asks for at 2 am: insurer, member ID, TPA and the cashless helpline.',
+   title:['insurer','policyName'], sub:['type'], val:{k:'sumInsured',kind:'cover'},
+   fields:[
+    F('insurer','Insurer','text',{key:1,ph:'Star Health, Niva Bupa, ICICI Lombard'}),
+    F('type','Type','select',{key:1,o:['Individual','Family floater','Employer group cover','Top-up / super top-up','Senior citizen']}),
+    F('sumInsured','Sum insured','money',{key:1}),
+    F('memberId','Health card / member ID','text',{key:1,idok:1}),
+    F('renewal','Renewal date','date',{key:1,remind:'Health policy renewal',amt:'premium',freq:'Yearly'}),
+    F('policyName','Policy name','text'),
+    F('policyNo','Policy no.','text',{idok:1}),
+    F('members','Members covered','text'),
+    F('tpa','TPA name','text',{hint:'The third-party administrator that handles cashless claims, e.g. Medi Assist, MDIndia.'}),
+    F('helpline','Cashless helpline','tel'),
+    F('premium','Premium (yearly)','money',{out:1,freq:'Yearly'}),
+    F('employer','Employer (for group cover)','text'),
+   ],
+   claim:'Hospital bills from before the death can still be claimed by the nominee within the policy\'s time limit. Employer cover usually ends with employment, so check the end date.' },
+
+ { id:'otherIns', g:'Insurance', name:'Other insurance', sheet:'Other insurance', noun:'policy',
+   short:'Accident, critical illness, PMJJBY/PMSBY, card covers.',
+   blurb:'Accident and critical illness plans, vehicle and home insurance, and the free covers bundled with bank accounts and credit cards.',
+   title:['type','insurer'], sub:['policyNo'], val:{k:'cover',kind:'cover'},
+   fields:[
+    F('type','Type','select',{key:1,o:['Personal accident','Critical illness','PMJJBY (govt life cover)','PMSBY (govt accident cover)','Credit / debit card cover','Loan protection','Home / fire','Travel','Other']}),
+    F('insurer','Insurer / bank','text',{key:1}),
+    F('cover','Cover amount','money',{key:1}),
+    F('renewal','Renewal date','date',{key:1,remind:'Insurance renewal',amt:'premium',freqKey:'freq'}),
+    F('policyNo','Policy no.','text',{idok:1}),
+    F('premium','Premium','money',{out:1,freqKey:'freq'}),
+    F('freq','Frequency','select',{o:FREQS}),
+   ],
+   claim:'Card and account-linked covers need the claim within a short window, often 30 to 90 days. Ask the bank as soon as possible.' },
+
+ { id:'demat', g:'Investments', name:'Demat & broking', sheet:'Demat & broking', noun:'account',
+   short:'Zerodha, Groww, ICICI Direct and other brokers.',
+   blurb:'Shares held in a demat account. The broker and depository (CDSL or NSDL) are what your family needs to start a transmission.',
+   title:['broker'], sub:['depository','clientId'], val:{k:'value',kind:'asset'},
+   fields:[
+    F('broker','Broker','text',{key:1,ph:'Zerodha, Groww, ICICI Direct'}),
+    F('clientId','Client ID / BO ID','text',{key:1,idok:1,hint:'An ID alone cannot be used to trade. Never write the login password.'}),
+    F('value','Approx. holdings value','money',{key:1}),
+    F('depository','Depository','select',{o:['CDSL','NSDL','Not sure']}),
+    F('linkedBank','Linked bank account','text'),
+    F('physical','Physical share certificates?','select',{o:['None','Yes (see notes)']}),
+   ],
+   claim:'The nominee submits a transmission request form with the death certificate to the broker or depository participant. Shares move into the nominee\'s own demat account.' },
+
+ { id:'holdings', g:'Investments', name:'Shares & ETFs (holdings)', sheet:'Share holdings', noun:'holding',
+   short:'Stock-by-stock list. Import your broker\'s file.',
+   blurb:'Optional. A stock-by-stock list helps your family check that nothing is missed during transmission. Import the holdings file from your broker instead of typing.',
+   title:['name'], sub:['broker'], val:{k:'value',kind:'none'}, common:['notes'],
+   fields:[
+    F('name','Stock / ETF','text',{key:1,ph:'RELIANCE, NIFTYBEES'}),
+    F('qty','Quantity','num',{key:1}),
+    F('value','Current value','money',{key:1}),
+    F('broker','Held with (broker)','text',{key:1,ph:'Zerodha'}),
+    F('isin','ISIN','text',{idok:1}),
+    F('avgCost','Average cost','money'),
+   ] },
+
+ { id:'mf', g:'Investments', name:'Mutual funds', sheet:'Mutual funds', noun:'folio',
+   short:'Folios, SIPs, CAMS / KFintech.',
+   blurb:'One row per folio or platform. SIPs bought through apps still sit with the fund house, so the folio is what matters.',
+   title:['amc'], sub:['folio','schemes'], val:{k:'value',kind:'asset'},
+   tip:'A single Consolidated Account Statement (CAS) from CAMS, KFintech or MF Central lists every folio under your PAN.',
+   fields:[
+    F('amc','Fund house / platform','text',{key:1,ph:'Parag Parikh MF, SBI MF, via Groww'}),
+    F('folio','Folio no.','text',{key:1,idok:1}),
+    F('value','Approx. value','money',{key:1}),
+    F('sip','SIP amount','money',{key:1,out:1,freq:'Monthly'}),
+    F('sipDate','Next SIP date','date',{remind:'SIP debit',amt:'sip',freq:'Monthly'}),
+    F('schemes','Scheme(s)','text'),
+    F('mode','Plan','select',{o:['Direct','Regular','Not sure']}),
+    F('rta','Registrar','select',{o:['CAMS','KFintech','Not sure']}),
+   ],
+   claim:'Send a transmission request to the fund house or its registrar (CAMS or KFintech) with the death certificate. Folios can be traced by PAN.' },
+
+ { id:'bonds', g:'Investments', name:'Bonds & gold bonds', sheet:'Bonds', noun:'holding',
+   short:'SGBs, RBI bonds, NCDs, tax-free bonds.',
+   blurb:'Sovereign Gold Bonds and RBI bonds are easy to forget because they pay quietly into a bank account.',
+   title:['type','issuer'], sub:['heldIn'], val:{k:'amount',kind:'asset'},
+   fields:[
+    F('type','Type','select',{key:1,o:['Sovereign Gold Bond','RBI Floating Rate Bond','Tax-free bond','54EC bond','NCD / corporate bond','Other']}),
+    F('issuer','Issuer / series','text',{key:1,ph:'SGB 2021-22 Series VIII'}),
+    F('amount','Amount invested','money',{key:1}),
+    F('maturityDate','Maturity date','date',{key:1,remind:'Bond matures'}),
+    F('heldIn','Held in','select',{o:['Demat','RBI Retail Direct','Bank / post office','Physical certificate']}),
+    F('units','Units / grams','num'),
+    F('ref','Holding ref.','text',{idok:1}),
+   ] },
+
+ { id:'smallSavings', g:'Investments', name:'PPF & post office', sheet:'PPF & post office', noun:'account',
+   short:'PPF, NSC, KVP, SCSS, Sukanya Samriddhi.',
+   blurb:'Small savings schemes at a post office or bank. Paper passbooks and certificates are often the only record.',
+   title:['scheme'], sub:['heldAt'], val:{k:'balance',kind:'asset'},
+   fields:[
+    F('scheme','Scheme','select',{key:1,o:['PPF','NSC','KVP','Senior Citizen Savings Scheme','Sukanya Samriddhi','Post Office Monthly Income','Post Office RD / TD','Other']}),
+    F('heldAt','Held at','text',{key:1,ph:'Head post office, Sector 19'}),
+    F('balance','Approx. balance','money',{key:1}),
+    F('depositDue','Next deposit due','date',{key:1,remind:'Scheme deposit due',amt:'yearlyDeposit',freq:'Yearly',hint:'PPF needs at least ₹500 by 31 March every year or the account becomes inactive.'}),
+    F('ref','Account / certificate no. (last 4)','text',{partial:1}),
+    F('yearlyDeposit','Yearly deposit','money',{out:1,freq:'Yearly'}),
+    F('maturityDate','Maturity date','date',{remind:'Scheme matures'}),
+   ],
+   claim:'The nominee claims at the same post office or bank with the death certificate, the passbook or certificate, and the claim form.' },
+
+ { id:'employer', g:'From your employer', name:'Employer benefits', sheet:'Employer benefits', noun:'benefit',
+   short:'Group health and life cover, gratuity, final dues.',
+   blurb:'Benefits that come with your job. Families often don\'t know about group life cover, gratuity or final salary dues, and most of it has to be claimed through HR.',
+   title:['benefit','employer'], sub:['provider'], val:{k:'cover',kind:'cover'},
+   common:['nominee','contactPerson','contactPhone','mobile','email','docs','notes'],
+   fields:[
+    F('benefit','Benefit','select',{key:1,o:['Group health insurance','Group term life insurance','Group personal accident cover','Gratuity','Superannuation','Leave encashment','Final salary and dues','Employer NPS','Other']}),
+    F('employer','Employer','text',{key:1}),
+    F('cover','Cover or amount','money',{key:1}),
+    F('provider','Insurer / provider','text',{key:1,ph:'ICICI Lombard, LIC, company trust'}),
+    F('policyNo','Group policy / member ID','text',{idok:1}),
+    F('covers','Who is covered','text',{ph:'Self, spouse, 2 children, parents'}),
+    F('portal','Benefits portal link','url'),
+    F('validTill','Valid until','date',{remind:'Group cover ends',hint:'Group cover usually ends the day you leave the job. Buy your own cover before then.'}),
+   ],
+   claim:'Tell HR as soon as possible. HR usually handles group insurance claims, gratuity, leave encashment and final salary together, and pays them to the nominee registered with the employer.' },
+
+ { id:'espp', g:'From your employer', name:'ESPP, RSU & company stock', sheet:'ESPP & RSU', noun:'plan',
+   short:'Employer stock, often with foreign brokers.',
+   blurb:'Stock from an employer, often held with a US broker your family has never heard of. These are among the most-missed assets.',
+   title:['employer','plan'], sub:['platform'], val:{k:'value',kind:'asset'},
+   fields:[
+    F('employer','Employer','text',{key:1}),
+    F('plan','Plan type','select',{key:1,o:['RSU','ESPP','ESOP','Phantom stock','Other']}),
+    F('platform','Broker / platform','text',{key:1,ph:'E*Trade, Fidelity NetBenefits, Schwab'}),
+    F('value','Approx. value (₹)','money',{key:1}),
+    F('vestDate','Next vest / purchase date','date',{remind:'Stock vest or purchase'}),
+    F('country','Broker country','select',{o:['USA','India','UK','Other']}),
+    F('accountRef','Account ref. (last 4)','text',{partial:1}),
+    F('units','Units held','num'),
+    F('beneficiary','Beneficiary named on the platform?','select',{o:YN,hint:'Foreign brokers follow the beneficiary set on their own platform. Without one, heirs face a long legal process abroad.'}),
+    F('hr','HR / benefits contact','text'),
+   ],
+   claim:'Contact the platform\'s estate or bereavement team. Foreign brokers often ask for notarised and apostilled documents, so start early.' },
+
+ { id:'crypto', g:'Investments', name:'Crypto & digital gold', sheet:'Crypto & digital gold', noun:'holding',
+   short:'Exchanges, wallets, app-based gold.',
+   blurb:'Holdings on exchanges and apps. Without a note, these are almost impossible for a family to find.',
+   title:['platform'], sub:['asset'], val:{k:'value',kind:'asset'},
+   fields:[
+    F('platform','Exchange / app / wallet','text',{key:1,ph:'CoinDCX, a hardware wallet, digital gold app'}),
+    F('asset','What is held','text',{key:1}),
+    F('value','Approx. value','money',{key:1}),
+    F('access','How family can access it','text',{key:1,hint:'Never type a seed phrase, password or PIN. Write where the recovery sheet is kept.'}),
+   ] },
+
+ { id:'retirement', g:'Retirement', name:'EPF, NPS & pension', sheet:'EPF NPS pension', noun:'account',
+   short:'EPF (UAN), NPS (PRAN), gratuity, APY.',
+   blurb:'Retirement money from every employer you have worked for. Old PF accounts that were never transferred are common.',
+   title:['type'], sub:['employer','idNo'], val:{k:'balance',kind:'asset'},
+   fields:[
+    F('type','Type','select',{key:1,o:['EPF','VPF','NPS Tier I','NPS Tier II','Atal Pension Yojana','Gratuity','Superannuation','Other pension']}),
+    F('idNo','UAN / PRAN / ID','text',{key:1,idok:1}),
+    F('balance','Approx. balance','money',{key:1}),
+    F('nomineeSet','Nominee updated online?','select',{key:1,o:YN,hint:'EPF e-nomination is done on the EPFO member portal.'}),
+    F('employer','Employer / POP','text'),
+    F('contribution','Voluntary contribution','money',{out:1,freq:'Yearly'}),
+    F('contributionDue','Next contribution due','date',{remind:'Pension contribution',amt:'contribution',freq:'Yearly'}),
+   ],
+   claim:'EPF: the nominee claims through EPFO for the PF balance, pension and EDLI insurance. NPS: the claim goes through the point of presence (POP) or the CRA.' },
+
+ { id:'property', g:'Property & valuables', name:'Property & land', sheet:'Property', noun:'property',
+   short:'Homes, plots, farmland, inherited land.',
+   blurb:'Every property, including inherited land that was never transferred into your name. Note where the original papers are.',
+   title:['type'], sub:['address'], val:{k:'value',kind:'asset'},
+   fields:[
+    F('type','Type','select',{key:1,o:['House / flat','Plot','Agricultural land','Shop / commercial','Under construction','Inherited (not yet transferred)']}),
+    F('address','Address / locality','text',{key:1}),
+    F('value','Approx. value','money',{key:1}),
+    F('papersAt','Original papers kept at','text',{key:1}),
+    F('ownership','Ownership','select',{o:['Sole','Joint']}),
+    F('coOwners','Co-owners','text'),
+    F('deedNo','Registry / sale deed no.','text',{idok:1}),
+    F('regDate','Registration date','date'),
+    F('taxId','Property tax ID','text',{idok:1}),
+    F('taxAmt','Property tax (yearly)','money',{out:1,freq:'Yearly'}),
+    F('taxDue','Property tax due','date',{remind:'Property tax due',amt:'taxAmt',freq:'Yearly'}),
+    F('rent','Rent received (monthly)','money'),
+    F('tenant','Tenant / caretaker contact','text'),
+   ],
+   claim:'Ownership passes through the will or succession law, then mutation at the local municipal or revenue office. Being a nominee in a housing society does not by itself make someone the owner.' },
+
+ { id:'gold', g:'Property & valuables', name:'Gold & valuables', sheet:'Gold & valuables', noun:'item',
+   short:'Jewellery, coins, silver, art.',
+   blurb:'Physical gold and valuables. Weight matters more than value, because value changes.',
+   title:['item'], sub:['keptAt'], val:{k:'value',kind:'asset'}, common:['docs','notes'],
+   fields:[
+    F('item','Item','text',{key:1,ph:'Gold bangles (4), silver coins'}),
+    F('weight','Approx. weight (grams)','num',{key:1}),
+    F('keptAt','Where kept','text',{key:1}),
+    F('value','Approx. value','money'),
+    F('bills','Bills / certificates kept at','text'),
+   ] },
+
+ { id:'vehicle', g:'Property & valuables', name:'Vehicles', sheet:'Vehicles', noun:'vehicle',
+   short:'Cars and two-wheelers, insurance and PUC dates.',
+   blurb:'Vehicles need RC transfer after a death, and insurance must stay valid to drive.',
+   title:['model'], sub:['regNo'], val:{k:'value',kind:'asset'},
+   fields:[
+    F('model','Make & model','text',{key:1}),
+    F('regNo','Registration no.','text',{key:1,idok:1}),
+    F('insRenewal','Insurance renewal','date',{key:1,remind:'Vehicle insurance renewal',freq:'Yearly'}),
+    F('pucDue','PUC due','date',{key:1,remind:'PUC due'}),
+    F('type','Type','select',{o:['Car','Two-wheeler','Commercial','Other']}),
+    F('insurer','Insurer','text'),
+    F('rcAt','RC kept at','text'),
+    F('loan','Loan','select',{o:['No loan','Loan running']}),
+    F('value','Approx. value','money'),
+   ] },
+
+ { id:'loans', g:'Loans & cards', name:'Loans', sheet:'Loans', noun:'loan',
+   short:'Home, car, personal, education, gold loans.',
+   blurb:'Families need to know what is owed, and whether a loan protection policy will pay it off.',
+   title:['type','lender'], sub:['ref'], val:{k:'outstanding',kind:'debt'}, common:['contactPerson','contactPhone','mobile','email','docs','link','notes'],
+   fields:[
+    F('type','Type','select',{key:1,o:['Home loan','Car loan','Personal loan','Education loan','Gold loan','Loan against property','Business loan','Other']}),
+    F('lender','Lender','text',{key:1}),
+    F('emi','EMI','money',{key:1,out:1,freq:'Monthly'}),
+    F('emiDate','Next EMI date','date',{key:1,remind:'EMI due',amt:'emi',freq:'Monthly'}),
+    F('outstanding','Approx. outstanding','money'),
+    F('endDate','Loan ends on','date'),
+    F('ref','Loan account (last 4)','text',{partial:1}),
+    F('insured','Loan insured?','select',{o:YN,hint:'If the loan has a protection cover, the insurer may repay it. Ask the lender.'}),
+    F('coBorrower','Co-borrower / guarantor','text'),
+   ],
+   claim:'Ask the lender about loan protection insurance first. A secured loan stays with the asset, so whoever inherits the asset usually takes on the loan.' },
+
+ { id:'cards', g:'Loans & cards', name:'Credit cards', sheet:'Credit cards', noun:'card',
+   short:'Cards, bill dates, add-ons, free covers.',
+   blurb:'Cards keep charging fees and interest until someone closes them. Many also carry free accident cover.',
+   title:['bank','cardName'], sub:['last4'], common:['mobile','email','notes'],
+   fields:[
+    F('bank','Bank','text',{key:1}),
+    F('cardName','Card name','text',{key:1,ph:'Regalia, Amazon Pay'}),
+    F('last4','Card no. (last 4 digits)','text',{key:1,partial:1}),
+    F('billDate','Next bill due','date',{key:1,remind:'Card bill due',freq:'Monthly'}),
+    F('autopay','Autopay on?','select',{o:['Yes','No']}),
+    F('addOn','Add-on cards (who holds)','text'),
+    F('annualFee','Annual fee','money',{out:1,freq:'Yearly'}),
+    F('freeCover','Free insurance with card?','select',{o:YN}),
+   ],
+   claim:'Inform the bank and close the card. Card dues are recovered from the estate, and family members are not personally liable unless they are co-applicants.' },
+
+ { id:'lent', g:'Loans & cards', name:'Money lent or borrowed', sheet:'Lent & borrowed', noun:'record',
+   short:'Informal loans to and from people.',
+   blurb:'Informal loans between friends and relatives. Without a note, money you lent is simply lost.',
+   title:['direction','person'], sub:[], common:['notes'],
+   fields:[
+    F('direction','Direction','select',{key:1,o:['I lent','I borrowed']}),
+    F('person','Person / firm','text',{key:1}),
+    F('amount','Amount','money',{key:1}),
+    F('dueDate','Expected return date','date',{key:1,remind:'Money due back',amt:'amount'}),
+    F('date','Date given','date'),
+    F('proof','Written proof kept at','text'),
+   ] },
+
+ { id:'business', g:'Business & digital', name:'Business & partnerships', sheet:'Business', noun:'business',
+   short:'Proprietorships, partnerships, LLPs, companies.',
+   blurb:'Your share in any business, and who runs the books.',
+   title:['bizName'], sub:['structure'], val:{k:'value',kind:'asset'},
+   fields:[
+    F('bizName','Business name','text',{key:1}),
+    F('structure','Structure','select',{key:1,o:['Proprietorship','Partnership','LLP','Private limited','Other']}),
+    F('share','My share (%)','num',{key:1}),
+    F('partners','Partners / co-directors','text'),
+    F('ca','CA / accountant','text'),
+    F('value','Approx. value of my share','money'),
+   ] },
+
+ { id:'digital', g:'Business & digital', name:'Digital accounts', sheet:'Digital accounts', noun:'account',
+   short:'Email, photos, social media, domains.',
+   blurb:'What should happen to each account: keep, download the data, memorialise or close. Usernames only, never passwords.',
+   title:['service'], sub:['username'], common:['mobile','email','notes'],
+   fields:[
+    F('service','Service','text',{key:1,ph:'Gmail, Google Photos, Instagram, a domain'}),
+    F('username','Username / email (no password)','text',{key:1}),
+    F('action','What should happen','select',{key:1,o:['Keep running','Download data, then close','Memorialise','Close']}),
+    F('legacy','Legacy contact set?','select',{o:YN,hint:'Google (Inactive Account Manager), Facebook and Apple let you name a legacy contact in advance.'}),
+    F('renewal','Renewal date','date',{remind:'Subscription renewal',amt:'cost',freq:'Yearly'}),
+    F('cost','Cost (yearly)','money',{out:1,freq:'Yearly'}),
+   ],
+   claim:'Each service has its own deceased-user process. A legacy contact set in advance makes it far simpler.' },
+
+ { id:'others', g:'Business & digital', name:'Anything else', sheet:'Anything else', noun:'item',
+   short:'Chit funds, builder deposits, memberships.',
+   blurb:'Chit funds, a deposit with a builder, gratuity an old employer still owes you, club memberships. Anything that doesn\'t fit elsewhere.',
+   title:['what'], sub:['where'], val:{k:'value',kind:'asset'},
+   fields:[
+    F('what','What is it','text',{key:1}),
+    F('where','Where / with whom','text',{key:1}),
+    F('value','Approx. value','money',{key:1}),
+    F('dueDate','Important date','date',{remind:'Reminder'}),
+   ] },
+];
+const COMMON = {
+  contactPerson: F('contactPerson','Contact person','text',{ph:'Agent, bank RM, HR'}),
+  contactPhone: F('contactPhone','Contact phone / email','text',{idok:1}),
+  mobile: F('mobile','Linked mobile (gets OTPs)','linked',{list:'mobiles'}),
+  email: F('email','Linked email','linked',{list:'emails'}),
+  nominee: F('nominee','Nominee','text'),
+  docs: F('docs','Documents kept at','text',{ph:'Blue file, study cupboard'}),
+  link: F('link','Folder / file link','url',{hint:'A Google Drive or OneDrive folder with scanned copies. Share access with family separately.'}),
+  notes: F('notes','Notes','note'),
+};
+const OWNER = F('owner','Belongs to','owner',{key:1});
+CATS.sort((a, b) => GROUPS.indexOf(a.g) - GROUPS.indexOf(b.g));
+const CAT = Object.fromEntries(CATS.map(c => [c.id, c]));
+const COMMON_PICKS = ['employer','contacts','bank','deposits','life','term','health','mf','demat','retirement','property','loans'];
+
+/* ---------- help content: where to find things, terms, imports ---------- */
+const EXTRA = {
+ bank:{ terms:['IFSC','Either or survivor','Nominee','PMJJBY','PMSBY','UDGAM','DEA Fund'],
+   find:['Open your Annual Information Statement (AIS) on the income tax portal. Every bank account and FD that paid you interest is listed under your PAN, including ones you forgot.','Old passbooks and cheque books show the account number and IFSC.','Search RBI\'s UDGAM portal for accounts in your family that have already gone unclaimed.'],
+   links:[['Income tax portal (AIS)','https://www.incometax.gov.in'],['RBI UDGAM','https://udgam.rbi.org.in']],
+   ff:{ branch:'The IFSC is printed on every cheque leaf and on the first page of your passbook. Net banking shows it under account details.', last4:'On your passbook, cheque leaf, bank statement or the bank app\'s home screen.' },
+   csv:{ syn:{ bank:['bank','bank name'], type:['account type','type'], last4:['account no','account number','last 4','last 4 digits'], balance:['balance','closing balance','available balance'], branch:['ifsc','ifsc code','branch'] } } },
+ deposits:{ terms:['Maturity','Nominee'],
+   find:['Net banking lists all your FDs and RDs under Deposits.','Your AIS on the income tax portal shows interest from every FD, including ones at other banks.'],
+   ff:{ ref:'On the FD receipt or advice, or under Deposits in net banking.', maturityDate:'On the FD advice or receipt. Net banking shows it next to each deposit.' },
+   csv:{ syn:{ institution:['bank','bank name','institution'], principal:['principal','amount','deposit amount'], maturityDate:['maturity date','maturity'], maturityAmt:['maturity amount','maturity value'], rate:['rate','interest rate','roi'], ref:['fd no','fd number','deposit no','account no'] } } },
+ locker:{ terms:['Nominee'], ff:{ rentDue:'Banks debit locker rent once a year. Find the date on your bank statement or in the locker agreement.' } },
+ life:{ terms:['Sum assured','Maturity','ULIP','Rider','Nominee'],
+   find:['Search your email for "premium receipt" or the insurer\'s name.','Look through bank statements for yearly or quarterly auto-debits (NACH, ECS, SI) to an insurer. Each one is a policy.','LIC policies can be added to the LIC customer portal with the policy number to see status and due dates.','Every insurer\'s website has an "unclaimed amounts" search for old policies.'],
+   links:[['LIC','https://licindia.in']],
+   ff:{ policyNo:'On the first page of the policy bond and on every premium receipt.', dueDate:'On your last premium receipt, or in the reminder SMS or email from the insurer.', maturityDate:'In the schedule on the first page of the policy bond.' } },
+ term:{ terms:['Sum assured','Rider','Nominee'],
+   find:['Term plans bought online usually came as a PDF by email. Search for the insurer\'s name.','Check bank statements for a yearly debit to an insurer.','Ask HR whether your employer gives group term life cover.'],
+   ff:{ policyNo:'On the policy PDF or the welcome email from the insurer.' } },
+ health:{ terms:['Sum insured','TPA','Top-up'],
+   find:['Your e-card (health card) has the member ID, TPA and cashless helpline.','For employer cover, check the HR benefits portal or ask HR for the e-card.'],
+   ff:{ memberId:'Printed on the health card or e-card from the insurer or TPA.', tpa:'The TPA\'s name and logo are on the health card.', renewal:'On the policy schedule. Insurers also send a renewal notice about a month before.' } },
+ otherIns:{ terms:['PMJJBY','PMSBY'],
+   find:['Check your bank statement around May each year for small debits: ₹436 (PMJJBY) and ₹20 (PMSBY).','Credit card welcome kits list any free insurance that comes with the card.'] },
+ demat:{ terms:['CDSL','NSDL','DP','BO ID','CAS','Transmission'],
+   find:['CDSL or NSDL emails you a CAS listing every demat account and holding under your PAN. Search your email for "CAS".','Your broker app shows the DP ID, Client ID and depository under Profile or Account.'],
+   links:[['CDSL','https://www.cdslindia.com'],['NSDL','https://nsdl.co.in']],
+   ff:{ clientId:'In your broker app under Profile or Account. The Client Master Report (CMR) from your broker also shows it.', depository:'A 16-digit numeric BO ID means CDSL. An ID that starts with "IN" means NSDL.' },
+   csv:{ syn:{ broker:['broker','dp name','depository participant'], clientId:['client id','bo id','demat account','demat account no','dp id client id'], value:['value','holding value','current value'], depository:['depository'] } } },
+ holdings:{ terms:['ISIN','CAS','Transmission'],
+   find:['In your broker\'s app or website, open Holdings and look for Download or Export. Save it as CSV or Excel and use "Import CSV or Excel" below.','Your CAS from CDSL or NSDL also lists every holding with its ISIN.'],
+   csv:{ syn:{ name:['instrument','symbol','tradingsymbol','trading symbol','stock','stock name','scrip','scrip name','company','company name','security','security name','name'], isin:['isin','isin code'], qty:['qty','quantity','units','shares','available qty','total qty','quantity available','holding qty'], value:['cur val','current value','market value','present value','closing value','value','holding value','total value','market value rs'], avgCost:['avg cost','average cost','average price','avg price','buy avg','avg buy price'], broker:['broker'] }, fill:['broker'] } },
+ mf:{ terms:['AMC','Folio','CAMS / KFintech','CAS','Direct vs regular plan','Transmission'],
+   find:['Request a detailed CAS from MF Central or CAMS with your PAN and email. One statement lists every folio from every fund house.','Most investment apps (Groww, Kuvera, Zerodha Coin and others) can export your mutual fund holdings as CSV or Excel. Use "Import CSV or Excel" below to bring them all in at once.'],
+   links:[['MF Central','https://www.mfcentral.com'],['CAMS','https://www.camsonline.com']],
+   ff:{ folio:'On any statement from the fund house, or in your CAS. Apps show it under holdings or transactions.', rta:'The statement\'s letterhead shows CAMS or KFintech.', sipDate:'Your bank statement shows the SIP debit date each month.' },
+   csv:{ syn:{ amc:['amc','amc name','fund house','mutual fund'], folio:['folio','folio no','folio number'], schemes:['scheme','scheme name','fund name','fund','name'], value:['current value','market value','value','cur val','valuation','current amount','present value','market value rs'], sip:['sip amount','sip'], mode:['plan','plan type'], rta:['registrar','rta'] }, fill:['amc'] } },
+ bonds:{ terms:['SGB','NCD','ISIN'],
+   find:['SGBs held in demat show in your CDSL or NSDL CAS. Those bought through a bank show in net banking under investments.','RBI bonds bought online are listed on RBI Retail Direct.'],
+   csv:{ syn:{ issuer:['series','bond','issue','security name','name','scheme'], units:['units','qty','quantity','grams'], amount:['amount','investment','invested amount','value'], maturityDate:['maturity date','maturity'] } } },
+ smallSavings:{ terms:['PPF','NSC','KVP','SCSS','Sukanya Samriddhi'],
+   find:['Passbooks and certificates are the main record. A PPF account in a bank also shows in net banking.'],
+   ff:{ ref:'On the first page of the passbook or on the certificate.' } },
+ espp:{ terms:['RSU','ESPP','ESOP'],
+   find:['Your employer\'s benefits or HR portal names the stock plan broker.','Search your email for the broker\'s welcome email or vesting confirmations.'],
+   ff:{ platform:'Ask HR, or search your email for vesting or purchase confirmations.' } },
+ crypto:{ find:['Exchange apps show holdings under Portfolio. Note where the hardware wallet and recovery sheet are kept, never the phrase itself.'] },
+ retirement:{ terms:['UAN','EDLI','PRAN','POP','CRA'],
+   find:['Log in to the EPFO member portal or the UMANG app with your UAN to see the passbook for every employer.','Your NPS statement from the CRA shows the PRAN and balance.'],
+   links:[['EPFO member portal','https://unifiedportal-mem.epfindia.gov.in']],
+   ff:{ idNo:'UAN is on your payslip and the EPFO member portal. PRAN is on your NPS card or statement.' } },
+ property:{ terms:['Mutation','Succession certificate','Legal heir certificate'],
+   find:['The registered sale deed has the registration number and date.','The property tax receipt has the property tax ID.','For farmland, your state\'s land records portal shows the current owner.'],
+   ff:{ deedNo:'On the registered sale deed, near the sub-registrar\'s stamp.', taxId:'On last year\'s property tax receipt.' } },
+ vehicle:{ terms:['RC','PUC'],
+   find:['DigiLocker and the mParivahan app hold your RC.','The insurance renewal date is on the policy PDF.'],
+   links:[['DigiLocker','https://www.digilocker.gov.in']] },
+ loans:{ terms:['EMI'],
+   find:['Your free credit report from CIBIL or Experian lists every loan and credit card in your name.','The sanction letter and EMI statement have the loan account number and end date.'],
+   links:[['CIBIL','https://www.cibil.com']],
+   ff:{ ref:'On the sanction letter or EMI statement.' } },
+ cards:{ find:['Your credit report lists every card in your name, including ones you stopped using.'] },
+ employer:{ terms:['Group insurance','Gratuity','Final settlement','EDLI'], find:['Your HR or benefits portal lists every group policy and the e-cards.','Your offer letter and yearly benefits statement show gratuity, superannuation and insurance.'] },
+ will:{ terms:['Executor','Probate','Legal heir certificate','Succession certificate'] },
+ digital:{ terms:['Legacy contact'], find:['Your password manager or your phone\'s saved accounts show which services you use. Note the service and username only.'] },
+};
+for (const c of CATS) { const x = EXTRA[c.id] || {};
+  Object.assign(c, { terms:x.terms || [], find:x.find || [], links:x.links || [], csv:x.csv || null });
+  for (const k in (x.ff || {})) { const f = c.fields.find(f => f.k === k); if (f) f.find = x.ff[k]; } }
+
+
+const NOMINATE = {
+ bank:{ t:'Fill Form DA1 at the branch, or use net banking (usually under Services or Profile). Since 1 November 2025, bank accounts, FDs and lockers can have up to four nominees.' },
+ deposits:{ t:'FDs and RDs can have their own nominee. Add it in net banking or at the branch with Form DA1. Up to four nominees are allowed since 1 November 2025.' },
+ locker:{ t:'Ask the branch for the locker nomination form. Lockers can have up to four nominees, who get access one after another.' },
+ life:{ t:'Ask the insurer or agent for the change-of-nomination form, or use the insurer\'s customer portal. Keep the endorsement letter with the policy bond.' },
+ term:{ t:'Change the nominee through the insurer\'s customer portal or nomination form. Keep the endorsement letter with the policy.' },
+ health:{ t:'Health policies name a nominee too. Update it at renewal or through the insurer\'s portal.' },
+ otherIns:{ t:'For PMJJBY and PMSBY, the nominee is set with the bank that debits the premium. Ask the branch to check it.' },
+ employer:{ t:'Gratuity (Form F) and group insurance have their own nominees with HR, separate from your EPF nominee. Ask HR to show you what is on record.' },
+ espp:{ t:'Set a beneficiary on the broker\'s own website. It is separate from any Indian nominee.' },
+ demat:{ t:'Add or change nominees in your broker\'s app, usually under Profile or Nominee. SEBI asks every demat holder to add a nominee or formally opt out.' },
+ holdings:{ t:'Shares follow the nominee on the demat account that holds them. Update it with your broker.' },
+ mf:{ t:'Update nominees for all your folios at once on MF Central, or on the CAMS and KFintech websites.', l:[['MF Central','https://www.mfcentral.com'],['CAMS','https://www.camsonline.com'],['KFintech','https://mfs.kfintech.com']] },
+ bonds:{ t:'Bonds in demat follow the demat nominee. RBI Retail Direct and bank-held bonds have their own nomination.' },
+ smallSavings:{ t:'Submit a nomination form at the post office or bank branch where the account is held.' },
+ crypto:{ t:'Some exchanges let you add a nominee in the app. For wallets, what matters is that your family knows where the recovery sheet is kept.' },
+ retirement:{ t:'EPF: file e-nomination on the EPFO member portal. NPS: update nominees on your CRA account or through your point of presence.', l:[['EPFO member portal','https://unifiedportal-mem.epfindia.gov.in']] },
+ property:{ t:'Property has no nominee in the usual sense. A registered will is the clearest way to say who inherits it. A housing society nomination does not transfer ownership.' },
+ vehicle:{ t:'You can add a nominee to a vehicle\'s registration through the Parivahan Vahan services, so ownership moves without a long process.' },
+ digital:{ t:'Google: set up Inactive Account Manager to choose who gets your data. Apple: add a Legacy Contact in Settings under your name. Facebook: choose a legacy contact in Memorialisation settings.', l:[['Google Inactive Account Manager','https://myaccount.google.com/inactive'],['Apple Legacy Contact','https://support.apple.com/102631']] },
+};
+for (const c of CATS) c.nominate = NOMINATE[c.id] ? { t:NOMINATE[c.id].t, l:NOMINATE[c.id].l || [] } : null;
+
+const GLOSS = {
+ 'AIS':'Annual Information Statement on the income tax portal. It shows interest, dividends and investment transactions reported against your PAN, so it reveals accounts you may have forgotten.',
+ 'AMC':'Asset Management Company: the fund house that runs a mutual fund, such as SBI Mutual Fund.',
+ 'BO ID':'Beneficial Owner ID: your full demat account number, made of the DP ID and Client ID (16 characters).',
+ 'CAMS / KFintech':'The two registrars that keep investor records for almost all Indian mutual funds. Your statements come from one of them.',
+ 'CAS':'Consolidated Account Statement. One statement of all your mutual fund folios (from CAMS, KFintech or MF Central), or of all your demat holdings (from CDSL or NSDL), under your PAN.',
+ 'CDSL':'Central Depository Services Limited, one of India\'s two depositories that hold shares in electronic form.',
+ 'CRA':'Central Recordkeeping Agency: keeps NPS records. Protean, KFintech and CAMS are CRAs.',
+ 'DEA Fund':'RBI\'s Depositor Education and Awareness Fund. Banks move deposits unclaimed for 10 years into it. Heirs can still claim them through the bank.',
+ 'Direct vs regular plan':'Two versions of the same fund. A direct plan is bought from the fund house with no distributor commission. A regular plan goes through a distributor.',
+ 'DP':'Depository Participant: the broker or bank through which you hold your demat account.',
+ 'EDLI':'Employees\' Deposit Linked Insurance: life cover linked to EPF, paid to the nominee if a member dies while in service.',
+ 'Either or survivor':'A joint account mode where either holder can operate the account, and the survivor carries on after one holder dies.',
+ 'EMI':'Equated Monthly Instalment: the fixed monthly loan repayment.',
+ 'ESOP':'Employee Stock Option Plan: the right to buy company shares later at a fixed price.',
+ 'ESPP':'Employee Stock Purchase Plan: buying company shares through salary deductions, usually at a discount.',
+ 'Final settlement':'The last payment from an employer: pending salary, leave encashment, bonus and reimbursements.',
+ 'Gratuity':'A lump sum an employer pays after 5 years of service, or on death at any length of service.',
+ 'Group insurance':'Insurance an employer buys for its staff. It usually ends when you leave the job.',
+ 'Legacy contact':'A person you choose in advance to manage or download an online account after your death.',
+ 'Executor':'The person named in a will to carry out its instructions.',
+ 'Folio':'Your account number with a mutual fund house. One folio can hold several schemes.',
+ 'IFSC':'Indian Financial System Code: an 11-character code for a bank branch, like SBIN0001234.',
+ 'ISIN':'International Securities Identification Number: a 12-character code that identifies a share, bond or fund, like INE002A01018.',
+ 'KVP':'Kisan Vikas Patra: a post office savings certificate that doubles the amount over a fixed period.',
+ 'Legal heir certificate':'A certificate from the local revenue office, such as the tehsildar, naming the legal heirs. Often asked for when there is no nominee.',
+ 'Maturity':'The date a deposit, bond or policy ends and pays out.',
+ 'Mutation':'Updating the owner\'s name in land or municipal records after a property changes hands.',
+ 'NCD':'Non-convertible debenture: a bond issued by a company that pays fixed interest.',
+ 'Nominee':'The person who receives money from an account or policy after the holder\'s death. In many cases the nominee holds it for the legal heirs, and final ownership follows the will or succession law.',
+ 'NSC':'National Savings Certificate: a 5-year post office savings certificate.',
+ 'NSDL':'National Securities Depository Limited, one of India\'s two depositories that hold shares in electronic form.',
+ 'PMJJBY':'Pradhan Mantri Jeevan Jyoti Bima Yojana: ₹2 lakh life cover for ₹436 a year, auto-debited from a bank account.',
+ 'PMSBY':'Pradhan Mantri Suraksha Bima Yojana: ₹2 lakh accident cover for ₹20 a year, auto-debited from a bank account.',
+ 'POP':'Point of Presence: the bank or institution through which you opened your NPS account.',
+ 'PPF':'Public Provident Fund: a 15-year government savings account at a bank or post office.',
+ 'PRAN':'Permanent Retirement Account Number: your 12-digit NPS account number.',
+ 'Probate':'A court\'s confirmation that a will is valid. Needed in some cases, mainly in Mumbai, Kolkata and Chennai.',
+ 'PUC':'Pollution Under Control certificate for a vehicle.',
+ 'RC':'Registration Certificate of a vehicle.',
+ 'Rider':'An add-on to an insurance policy, such as accidental death or critical illness cover.',
+ 'RSU':'Restricted Stock Units: company shares given to employees that become theirs on vesting dates.',
+ 'SCSS':'Senior Citizen Savings Scheme: a 5-year deposit for people over 60, at a post office or bank.',
+ 'SGB':'Sovereign Gold Bond: a government bond priced in grams of gold that also pays interest.',
+ 'Succession certificate':'A civil court certificate that lets heirs collect debts and securities, such as shares or deposits, when there is no will or nominee.',
+ 'Sukanya Samriddhi':'A government savings scheme for a girl child, opened by a parent or guardian.',
+ 'Sum assured':'The amount a life insurance policy pays on death.',
+ 'Sum insured':'The most a health policy pays in a policy year.',
+ 'Top-up':'Extra health cover that pays after a set amount (the deductible) is used up. A super top-up counts all of the year\'s bills towards that amount.',
+ 'TPA':'Third Party Administrator: the company that handles cashless approvals and claims for a health insurer.',
+ 'Transmission':'Moving shares or fund units to a nominee or legal heir after the holder\'s death.',
+ 'UAN':'Universal Account Number: your 12-digit EPF number. It stays the same across employers.',
+ 'UDGAM':'RBI\'s online portal to search unclaimed deposits across banks.',
+ 'ULIP':'Unit Linked Insurance Plan: a policy that combines life cover with market investment.',
+};
+
+const MASTER = [
+ { t:'Annual Information Statement (AIS)', w:'Income tax portal, under AIS after you log in', c:'Bank accounts, FDs, dividends, mutual fund and share transactions', d:'Shows money reported against your PAN, so forgotten accounts that paid interest show up here.', u:'https://www.incometax.gov.in' },
+ { t:'Mutual fund CAS', w:'MF Central or CAMS', c:'Every mutual fund folio and scheme, across fund houses', d:'Request a detailed statement with your PAN and email. It arrives as a password-protected PDF.', u:'https://www.mfcentral.com' },
+ { t:'Depository CAS', w:'Email from CDSL or NSDL', c:'Every demat account, share, ETF and bond held in demat', d:'Sent to your registered email. Search your inbox for "CAS".' },
+ { t:'Credit report', w:'CIBIL or Experian, free once a year', c:'Every loan and credit card in your name', d:'Also shows old cards and loans you may have forgotten.', u:'https://www.cibil.com' },
+ { t:'EPFO member portal', w:'Log in with your UAN, or use the UMANG app', c:'PF from every employer, pension and nominee details', d:'The passbook lists contributions employer by employer.', u:'https://unifiedportal-mem.epfindia.gov.in' },
+ { t:'DigiLocker', w:'DigiLocker app or website', c:'PAN, Aadhaar, driving licence, vehicle RC, some insurance policies', d:'Government-issued copies your family can also rely on.', u:'https://www.digilocker.gov.in' },
+ { t:'RBI UDGAM', w:'RBI\'s unclaimed deposits portal', c:'Deposits already unclaimed for 10 years or more', d:'Search by name across many banks.', u:'https://udgam.rbi.org.in' },
+ { t:'Bank statements', w:'Net banking, last 12 months', c:'Insurance premiums, SIPs, loan EMIs, locker rent', d:'Look for recurring debits (NACH, ECS, SI). Each one points to a policy, fund or loan.' },
+ { t:'Your email inbox', w:'Search "policy", "premium receipt", "folio", "allotment"', c:'Policies bought online, investments, subscriptions', d:'Most institutions send a welcome letter or statement by email.' },
+];
+
+function allFields(cat, family){
+  const extra = (cat.common || ['nominee','contactPerson','contactPhone','mobile','email','docs','link','notes']).map(k => COMMON[k]);
+  return [...(family ? [OWNER] : []), ...cat.fields, ...extra];
+}
+
+/* ---------- state ---------- */
+const S = { mode:'me', people:[], preparedBy:'', common:{ link:'', docs:'' }, ids:{ mobiles:[], emails:[] }, glossQ:'', cats:new Set(COMMON_PICKS), entries:{}, view:'setup', editing:null, sample:false, dirty:false, upOwner:'', upWindow:'365' };
+const KIND_LABEL = { asset:'Value', cover:'Cover', debt:'Owed', none:'Detail' };
+const isFamily = () => S.mode === 'family';
+const list = id => (S.entries[id] ||= []);
+const selectedCats = () => CATS.filter(c => S.cats.has(c.id));
+const totalEntries = () => Object.values(S.entries).reduce((a, l) => a + l.length, 0);
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Math.random().toString(36).slice(2, 10);
+const num = v => (v === '' || v == null) ? NaN : Number(String(v).replace(/[₹,\s]/g, ''));
+const INR = new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits:0 });
+const inr = v => { const n = num(v); return isFinite(n) ? INR.format(n) : ''; };
+const pad = n => String(n).padStart(2, '0');
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseISO = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
+const today = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+const DATEF = new Intl.DateTimeFormat('en-IN', { day:'numeric', month:'short', year:'numeric' });
+const fmtDate = s => { const d = parseISO(s); return d ? DATEF.format(d) : ''; };
+const daysBetween = (a, b) => Math.round((b - a) / 86400000);
+function addMonths(d, n){
+  const y = d.getFullYear(), m = d.getMonth() + n, day = d.getDate();
+  const last = new Date(y, m + 1, 0).getDate();
+  return new Date(y, m, Math.min(day, last));
+}
+function nextOccurrence(s, freq){
+  const d = parseISO(s); if (!d) return null;
+  const step = MONTHS_IN[freq];
+  if (!step) return { date:d, recurring:false };
+  const t = today(); let n = d, i = 0;
+  while (n < t && i < 2400) { i++; n = addMonths(d, step * i); }
+  return { date:n, recurring:true };
+}
+function fieldFreq(f, e){ return f.freq || (f.freqKey ? e[f.freqKey] : '') || ''; }
+const plural = c => ({ policy:'policies', property:'properties', business:'businesses' }[c.noun] || c.noun + 's');
+const inWords = n => n >= 1e7 ? `${+(n / 1e7).toFixed(2)} crore` : n >= 1e5 ? `${+(n / 1e5).toFixed(2)} lakh` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)} thousand` : '';
+function entryTitle(cat, e){
+  const t = cat.title.map(k => e[k]).filter(Boolean).join(' · ');
+  return t || `Untitled ${cat.noun}`;
+}
+function fmtVal(f, v){
+  if (v === '' || v == null) return '';
+  if (f.t === 'money') return inr(v);
+  if (f.t === 'date') return fmtDate(v);
+  if (f.partial) return '•••• ' + v;
+  return String(v);
+}
+function entrySub(cat, e){
+  const all = allFields(cat, true);
+  return cat.sub.map(k => { const f = all.find(x => x.k === k); return f ? fmtVal(f, e[k]) : ''; }).filter(Boolean).join(' · ');
+}
+function dueStatus(days){
+  if (days < 0) return ['late', days === -1 ? 'Yesterday' : `${-days} days ago`];
+  if (days === 0) return ['soon', 'Today'];
+  if (days <= 7) return ['soon', days === 1 ? 'Tomorrow' : `In ${days} days`];
+  if (days <= 30) return ['near', `In ${days} days`];
+  if (days <= 90) return ['later', `In ${Math.round(days / 7)} weeks`];
+  return ['later', `In ${Math.round(days / 30.4)} months`];
+}
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2800); }
+function markDirty(){ S.dirty = true; }
+
+/* ---------- derived data ---------- */
+function upcomingItems(){
+  const out = [], t = today();
+  for (const cat of selectedCats()) for (const e of list(cat.id)) for (const f of cat.fields) {
+    if (!f.remind || !e[f.k]) continue;
+    const freq = fieldFreq(f, e);
+    const occ = nextOccurrence(e[f.k], freq); if (!occ) continue;
+    out.push({ date:occ.date, recurring:occ.recurring, freq:occ.recurring ? freq : '', label:f.remind, title:entryTitle(cat, e),
+      cat, e, owner:e.owner || '', amount:f.amt ? num(e[f.amt]) : NaN, days:daysBetween(t, occ.date) });
+  }
+  return out.sort((a, b) => a.date - b.date);
+}
+function totals(){
+  const r = { asset:0, cover:0, debt:0, yearly:0, perCat:{} };
+  for (const cat of selectedCats()) {
+    let v = 0, y = 0;
+    for (const e of list(cat.id)) {
+      if (cat.id === 'lent') { const n = num(e.amount); if (isFinite(n)) { if (e.direction === 'I borrowed') r.debt += n; else r.asset += n; v += n; } }
+      else if (cat.id === 'employer') { const n = num(e.cover); if (isFinite(n)) { v += n; r[/insurance|cover/i.test(e.benefit || '') ? 'cover' : 'asset'] += n; } }
+      else if (cat.val) { const n = num(e[cat.val.k]); if (isFinite(n)) { v += n; if (typeof r[cat.val.kind] === 'number') r[cat.val.kind] += n; } }
+      for (const f of cat.fields) if (f.out) { const n = num(e[f.k]); const m = PER_YEAR[fieldFreq(f, e)] || 0; if (isFinite(n)) y += n * m; }
+    }
+    r.yearly += y; r.perCat[cat.id] = { count:list(cat.id).length, value:v, yearly:y };
+  }
+  return r;
+}
+
+/* ---------- safety nudges ---------- */
+const SECRET_RE = /\b(password|passwd|pwd|pass ?code|m?pin|cvv|cvc|otp|upi pin|seed phrase|recovery phrase|secret phrase|private key|login id)\b/i;
+function safetyWarning(f, v){
+  if (!v || f.t === 'money' || f.t === 'num' || f.t === 'date' || f.t === 'select' || f.t === 'owner' || f.t === 'linked') return '';
+  if (SECRET_RE.test(v)) return 'This looks like a password, PIN or secret. Don\'t store those here. Write where they can be found instead.';
+  const digits = v.replace(/[\s-]/g, '');
+  if (f.partial && /\d{5,}/.test(digits)) return 'Only the last 4 digits are needed. Your family can get the full number from the bank or statement.';
+  if (f.t === 'tel' || f.idok) return '';
+  if (/(^|\D)\d{4}[\s-]?\d{4}[\s-]?\d{4}(\D|$)/.test(v) && !/\d{13,}/.test(digits)) return 'This looks like an Aadhaar number. Note where the card is kept instead.';
+  if (/\d{13,19}/.test(digits)) return 'This looks like a full card or account number. Use the last 4 digits only.';
+  return '';
+}
+
+/* ---------- rendering ---------- */
+function render(){
+  const m = $('#main');
+  $('#sampleBar').hidden = !S.sample;
+  $('#exportBtn').hidden = S.view === 'setup' && totalEntries() === 0;
+  if (S.view === 'setup') m.innerHTML = renderSetup();
+  else m.innerHTML = `<div class="ws"><nav class="nav" aria-label="Categories">${renderNav()}</nav><section id="content" style="min-width:0">${renderContent()}</section></div>`;
+  const cur = m.querySelector('.nav [aria-current="page"]');
+  if (cur && window.matchMedia('(max-width:860px)').matches) cur.scrollIntoView({ block:'nearest', inline:'center' });
+}
+
+function idList(list, label, hint, ph){
+  const L = S.ids[list];
+  return `<div class="field"><label for="in-${list}">${esc(label)}</label><p class="hint">${esc(hint)}</p><div class="people">${L.map((x, i) => `<span class="chip">${esc(x)}<button data-act="rmId" data-list="${list}" data-i="${i}" aria-label="Remove ${esc(x)}">×</button></span>`).join('')}
+    <form class="inline-add" data-form="id" data-list="${list}"><input id="in-${list}" type="${list === 'emails' ? 'email' : 'text'}" autocomplete="off" placeholder="${esc(ph)}"><button class="btn" type="submit">Add</button></form></div></div>`;
+}
+function renderSetup(){
+  const counts = id => list(id).length;
+  const groups = GROUPS.map(g => {
+    const cs = CATS.filter(c => c.g === g);
+    return `<div class="group-h"><h3>${g}</h3></div><div class="tiles">${cs.map(c => `
+      <label class="tile"><input type="checkbox" data-cat="${c.id}" ${S.cats.has(c.id) ? 'checked' : ''}>
+      <span class="tn">${esc(c.name)}</span><span class="td">${esc(c.short)}</span>${counts(c.id) ? `<span class="tc">${counts(c.id)}</span>` : ''}</label>`).join('')}</div>`;
+  }).join('');
+  const n = S.cats.size;
+  const hasData = totalEntries() > 0;
+  return `
+  <section class="hero">
+    <div>
+      <h1>Leave your family a <em>map</em>, not a mystery.</h1>
+      <p class="lede">List your LIC policies, bank accounts, mutual funds, property and loans in one place. Download it as an Excel file your family can open when they need it. Every field is optional.</p>
+    </div>
+    <div class="proof">
+      <div><span class="dot">1</span><span><b>No sign-up, no server</b>What you type stays in this browser tab.</span></div>
+      <div><span class="dot">2</span><span><b>Nothing is saved</b>Close the tab and it is gone. Your Excel file is your copy.</span></div>
+      <div><span class="dot">3</span><span><b>Works offline</b>Turn off your internet after this page loads. Everything still works.</span></div>
+    </div>
+  </section>
+  <section class="step">
+    <div class="step-h"><div class="k">Step 1</div><h2>Who is this for?</h2><p>For a family, each entry gets a "Belongs to" column you can filter.</p></div>
+    <div>
+      <div class="seg" role="group" aria-label="Who is this for">
+        <button data-act="mode" data-mode="me" aria-pressed="${!isFamily()}">Just me</button>
+        <button data-act="mode" data-mode="family" aria-pressed="${isFamily()}">My family</button>
+      </div>
+      ${isFamily() ? `<div class="people">${S.people.map((p, i) => `<span class="chip">${esc(p)}<button data-act="rmPerson" data-i="${i}" aria-label="Remove ${esc(p)}">×</button></span>`).join('')}
+        <form class="inline-add" data-form="person"><input id="personIn" placeholder="Add a name, e.g. Papa" aria-label="Add a family member"><button class="btn" type="submit">Add</button></form></div>` : ''}
+      <div style="margin-top:1rem;max-width:22rem" class="field"><label for="preparedBy">Your name (shown on the file)</label><input class="name-in" id="preparedBy" value="${esc(S.preparedBy)}" placeholder="Optional"></div>
+    </div>
+  </section>
+  <section class="step">
+    <div class="step-h"><div class="k">Step 2</div><h2>Shared details</h2><p>Optional. Set these once. Any entry that leaves them blank uses these.</p></div>
+    <div><div class="grid" style="max-width:46rem">
+      <div class="field"><label for="commonLink">One folder with all scanned documents</label><input class="name-in" id="commonLink" inputmode="url" autocomplete="off" value="${esc(S.common.link)}" placeholder="https://drive.google.com/drive/folders/..."><p class="hint">Make one Google Drive or OneDrive folder with a sub-folder per category, and share it only with family. Virasat keeps the link, never the files.</p></div>
+      <div class="field"><label for="commonDocs">Where the original papers are kept</label><input class="name-in" id="commonDocs" autocomplete="off" value="${esc(S.common.docs)}" placeholder="Steel almirah, bedroom, blue file"></div>
+    </div>
+    <div class="idlists">
+      ${idList('mobiles', 'Mobile numbers linked to accounts', 'Banks and apps send OTPs here. Your family should keep these SIMs active.', 'Add a number, e.g. Ramesh 98100 00011')}
+      ${idList('emails', 'Email addresses linked to accounts', 'Statements and policy documents arrive here. Add each one you use.', 'Add an email')}
+    </div></div>
+  </section>
+  <section class="step">
+    <div class="step-h"><div class="k">Step 3</div><h2>What do you have?</h2><p>Only these tabs appear in the app and in your Excel. You can change this later.</p>
+      <button class="btn small ghost" style="margin-top:.5rem;padding-left:0" data-act="view" data-v="find">Not sure what you own? Find it &rarr;</button>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.8rem"><button class="btn small" data-act="pick" data-p="common">Common picks</button><button class="btn small" data-act="pick" data-p="all">All</button><button class="btn small ghost" data-act="pick" data-p="none">None</button></div></div>
+    <div>${groups}</div>
+  </section>
+  <div class="go">
+    <button class="btn primary" data-act="start" ${n ? '' : 'disabled'}>${hasData ? 'Back to my list' : 'Start my list'} (${n} ${n === 1 ? 'category' : 'categories'})</button>
+    <button class="btn" data-act="load">Import my data</button>
+    ${hasData ? '' : '<button class="btn ghost" data-act="sample">Explore with sample data</button>'}
+  </div>
+  <div class="excel-alt">
+    <p><b style="color:var(--ink)">Prefer to fill an Excel yourself?</b> Download a blank template with all categories, dropdowns and filters. The browser is easier, and it never keeps your data either.</p>
+    <button class="btn small" data-act="template">Blank Excel template</button>
+    <button class="btn small" data-act="sampleXlsx">Sample Excel (made-up data)</button>
+  </div>`;
+}
+
+function renderNav(){
+  const v = S.view, up = upcomingItems().filter(i => i.days >= 0 && i.days <= 30).length;
+  let h = `<button data-act="view" data-v="summary" ${v === 'summary' ? 'aria-current="page"' : ''}>Overview</button>
+    <button data-act="view" data-v="upcoming" ${v === 'upcoming' ? 'aria-current="page"' : ''}><span>Upcoming dates</span>${up ? `<span class="n hot">${up}</span>` : ''}</button>
+    <button data-act="view" data-v="find" ${v === 'find' ? 'aria-current="page"' : ''}>Find my details</button>`;
+  for (const g of GROUPS) {
+    const cs = selectedCats().filter(c => c.g === g); if (!cs.length) continue;
+    h += `<div class="nh">${g}</div>` + cs.map(c => `<button data-act="view" data-v="cat:${c.id}" ${v === 'cat:' + c.id ? 'aria-current="page"' : ''}><span>${esc(c.name)}</span><span class="n">${list(c.id).length || ''}</span></button>`).join('');
+  }
+  return h + `<div class="nh">Help</div><button data-act="view" data-v="glossary" ${v === 'glossary' ? 'aria-current="page"' : ''}>Glossary</button><button class="edit" data-act="home">+ Add or remove categories</button>`;
+}
+
+function renderContent(){
+  if (S.view === 'upcoming') return renderUpcoming();
+  if (S.view === 'summary') return renderSummary();
+  if (S.view === 'find') return renderFind();
+  if (S.view === 'glossary') return renderGlossary();
+  const cat = CAT[S.view.slice(4)];
+  return cat ? renderCat(cat) : '';
+}
+
+function renderCat(cat){
+  const items = list(cat.id);
+  const ed = S.editing && S.editing.cat === cat.id ? S.editing : null;
+  const cards = items.map(e => ed && ed.id === e.id ? renderForm(cat, e) : renderCard(cat, e)).join('');
+  const newForm = ed && ed.id === 'new' ? renderForm(cat, ed.draft || {}) : '';
+  const article = /^[aeiou]/i.test(cat.noun) ? 'an' : 'a';
+  return `
+  <div class="cat-h"><div class="eyebrow">${esc(cat.g)}</div><h2>${esc(cat.name)}</h2><p>${esc(cat.blurb)}</p>
+    ${cat.tip ? `<div class="tip"><b>Tip</b><span>${esc(cat.tip)}</span></div>` : ''}
+    ${cat.terms.length ? `<div class="terms"><span class="muted">What do these mean?</span>${cat.terms.map(t => `<button class="term" data-act="term" data-t="${esc(t)}" aria-expanded="false" aria-controls="termBox">${esc(t)}</button>`).join('')}</div><div class="term-box" id="termBox" hidden></div>` : ''}</div>
+  ${cat.find.length ? `<details class="findbox" ${items.length ? '' : 'open'}><summary>Where to find these details</summary><ol>${cat.find.map(f => `<li>${esc(f)}</li>`).join('')}</ol>${cat.links.length ? `<div class="links">${cat.links.map(([l, u]) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${esc(l)} &#8599;</a>`).join('')}</div>` : ''}</details>` : ''}
+  ${cat.nominate ? `<details class="findbox"><summary>${cat.id === 'digital' ? 'Set a legacy contact' : 'Add or update the nominee'}</summary><p class="nom">${esc(cat.nominate.t)}</p>${(cat.nominate.l || []).length ? `<div class="links">${cat.nominate.l.map(([l, u]) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${esc(l)} &#8599;</a>`).join('')}</div>` : ''}</details>` : ''}
+  <div class="toolbar"><button class="btn primary" data-act="add">+ Add ${article} ${esc(cat.noun)}</button>${cat.csv ? `<button class="btn" data-act="csvImport">Import CSV or Excel</button><button class="btn ghost small" data-act="csvTemplate">CSV template</button>` : ''}<span class="muted" style="font-size:.88rem">${items.length ? `${items.length} ${items.length === 1 ? cat.noun : plural(cat)}` : ''}</span></div>
+  <div class="list">${newForm}${cards || (newForm ? '' : `<div class="empty"><b>No ${esc(plural(cat))} listed yet.</b>Add your first one. Every field is optional, so fill in what you know.</div>`)}</div>
+  ${cat.claim ? `<details class="claim"><summary>How your family claims this <span class="draft">Draft</span></summary><p>${esc(cat.claim)}</p></details>` : ''}`;
+}
+
+function renderCard(cat, e){
+  const fields = allFields(cat, isFamily());
+  const skip = new Set([...cat.title, ...cat.sub, 'owner']);
+  const facts = fields.filter(f => f.key && !skip.has(f.k) && e[f.k] && f.t !== 'date').slice(0, 4)
+    .map(f => `<span>${esc(f.l)} <b>${esc(fmtVal(f, e[f.k]))}</b></span>`);
+  const next = upcomingItems().filter(i => i.e === e)[0];
+  const sub = entrySub(cat, e);
+  return `<article class="card">
+    <div><div class="ct">${isFamily() && e.owner ? `<span class="owner-tag">${esc(e.owner)}</span>` : ''}${esc(entryTitle(cat, e))}</div>${sub ? `<div class="cs">${esc(sub)}</div>` : ''}</div>
+    <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;justify-content:flex-end">${next ? (() => { const [c, t] = dueStatus(next.days); return `<span class="pill ${c}" title="${esc(next.label)}: ${esc(DATEF.format(next.date))}">${esc(next.label)} · ${t}</span>`; })() : ''}<button class="btn small" data-act="edit" data-id="${e.id}">Edit</button></div>
+    ${facts.length ? `<div class="facts">${facts.join('')}</div>` : ''}
+  </article>`;
+}
+
+function renderForm(cat, e){
+  const fields = allFields(cat, isFamily());
+  const key = fields.filter(f => f.key), more = fields.filter(f => !f.key);
+  const moreFilled = more.some(f => e[f.k]);
+  const isNew = !e.id;
+  return `<form class="form" data-form="entry" data-cat="${cat.id}" novalidate>
+    <div class="form-h"><h3>${isNew ? `New ${esc(cat.noun)}` : esc(entryTitle(cat, e))}</h3><span class="hint">All fields optional</span></div>
+    <div class="grid">${key.map(f => fieldInput(f, e)).join('')}</div>
+    ${more.length ? `<details class="more" ${moreFilled ? 'open' : ''}><summary>More details (${more.length})</summary><div class="grid">${more.map(f => fieldInput(f, e)).join('')}</div></details>` : ''}
+    <div class="form-f"><button class="btn primary" type="submit">Save</button><button class="btn" type="button" data-act="cancel">Cancel</button><span class="sp"></span>
+      ${isNew ? '' : `<button class="btn danger" type="button" data-act="del" data-id="${e.id}">Delete</button>`}</div>
+  </form>`;
+}
+
+function fieldInput(f, e){
+  const id = 'fld-' + f.k, v = e[f.k] ?? '';
+  const ph = f.ph ? ` placeholder="${esc(f.ph)}"` : '';
+  let input;
+  switch (f.t) {
+    case 'select': {
+      const opts = [...f.o]; if (v && !opts.includes(v)) opts.push(v);
+      input = `<select id="${id}" name="${f.k}"><option value="">Choose</option>${opts.map(o => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`; break; }
+    case 'owner': {
+      const opts = [...S.people]; if (v && !opts.includes(v)) opts.push(v);
+      input = `<select id="${id}" name="${f.k}"><option value="">Choose</option>${opts.map(o => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`; break; }
+    case 'linked': {
+      const L = S.ids[f.list] || [];
+      if (L.length) { const opts = [...L]; if (v && !opts.includes(v)) opts.push(v);
+        input = `<select id="${id}" name="${f.k}"><option value="">${esc('Default: ' + L[0])}</option>${opts.map(o => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`; }
+      else input = `<input type="${f.list === 'emails' ? 'email' : 'tel'}" id="${id}" name="${f.k}" autocomplete="off" value="${esc(v)}" placeholder="${f.list === 'emails' ? 'name@example.com' : '98100 00011'}">`;
+      break; }
+    case 'date': input = `<input type="date\" id="${id}" name="${f.k}" value="${esc(v)}">`; break;
+    case 'money': { const n = num(v); input = `<div class="money"><span>₹</span><input id="${id}" name="${f.k}" inputmode="decimal" autocomplete="off" value="${esc(v)}"${ph}></div><p class="hint mono" data-words="${f.k}">${isFinite(n) && n >= 1000 ? esc(inr(n) + ' · ' + inWords(n)) : ''}</p>`; break; }
+    case 'num': input = `<input id="${id}" name="${f.k}" inputmode="decimal" autocomplete="off" value="${esc(v)}"${ph}>`; break;
+    case 'note': input = `<textarea id="${id}" name="${f.k}" rows="2"${ph}>${esc(v)}</textarea>`; break;
+    case 'tel': input = `<input type="tel" id="${id}" name="${f.k}" autocomplete="off" value="${esc(v)}"${ph}>`; break;
+    case 'email': input = `<input type="email" id="${id}" name="${f.k}" autocomplete="off" value="${esc(v)}"${ph}>`; break;
+    case 'url': input = `<input id="${id}" name="${f.k}" inputmode="url" autocomplete="off" value="${esc(v)}" placeholder="${f.k === 'link' && S.common.link ? 'Blank = your common folder' : 'https://drive.google.com/...'}">`; break;
+    default: input = `<input id="${id}" name="${f.k}" autocomplete="off" value="${esc(v)}"${f.k === 'docs' && S.common.docs ? ` placeholder="Blank = ${esc(S.common.docs)}"` : ph}>`;
+  }
+  const w = safetyWarning(f, String(v));
+  return `<div class="field ${f.t === 'note' ? 'wide' : ''}"><label for="${id}">${esc(f.l)}</label>${input}${f.hint ? `<p class="hint">${esc(f.hint)}</p>` : ''}${f.find ? `<details class="find"><summary>Where do I find this?</summary><p>${esc(f.find)}</p></details>` : ''}<p class="warn" data-warn="${f.k}" ${w ? '' : 'hidden'}>${esc(w)}</p></div>`;
+}
+
+function renderUpcoming(){
+  const all = upcomingItems();
+  const win = S.upWindow;
+  let items = all.filter(i => i.days >= -60);
+  if (win !== 'all') items = items.filter(i => i.days <= +win);
+  if (S.upOwner) items = items.filter(i => i.owner === S.upOwner);
+  const yearly = totals().yearly;
+  let lastMonth = '', rows = '';
+  const MF = new Intl.DateTimeFormat('en-IN', { month:'long', year:'numeric' });
+  for (const i of items) {
+    const mk = MF.format(i.date);
+    if (mk !== lastMonth) { rows += `<div class="month">${mk}</div>`; lastMonth = mk; }
+    const [c, t] = dueStatus(i.days);
+    rows += `<div class="due"><div class="d"><b>${i.date.getDate()}</b><span>${i.date.toLocaleString('en-IN', { month:'short' })}</span></div>
+      <div class="w"><b>${esc(i.label)}</b> <span class="muted">·</span> ${esc(i.title)}<div class="s">${isFamily() && i.owner ? `<span class="owner-tag">${esc(i.owner)}</span>` : ''}${esc(i.cat.name)}${i.freq ? ` · repeats ${esc(i.freq.toLowerCase())}` : ''}</div></div>
+      <div class="r"><span class="pill ${c}">${t}</span>${isFinite(i.amount) ? `<span class="amt">${inr(i.amount)}</span>` : ''}<a href="${gcalLink(i)}" target="_blank" rel="noopener noreferrer">Add to Google Calendar</a></div></div>`;
+  }
+  const owners = isFamily() ? `<select id="upOwner" data-change="upOwner" aria-label="Filter by person"><option value="">Everyone</option>${S.people.map(p => `<option ${p === S.upOwner ? 'selected' : ''}>${esc(p)}</option>`).join('')}</select>` : '';
+  return `<div class="cat-h"><div class="eyebrow">Reminders</div><h2>Upcoming dates</h2>
+    <p>Premiums, renewals, EMIs and maturities from every tab, in date order. Recurring dates roll forward to the next one automatically.</p></div>
+  <div class="filters">${owners}
+    <select id="upWindow" data-change="upWindow" aria-label="Time window">${[['30','Next 30 days'],['90','Next 3 months'],['365','Next 12 months'],['all','Everything']].map(([k, l]) => `<option value="${k}" ${k === win ? 'selected' : ''}>${l}</option>`).join('')}</select>
+    <button class="btn" data-act="ics">Calendar file (.ics)</button>
+    ${yearly ? `<span class="muted" style="font-size:.88rem">Regular payments: <b style="color:var(--ink)">${inr(yearly)}</b> a year</span>` : ''}
+  </div>
+  ${rows || `<div class="empty"><b>No dates in this window.</b>Add a premium due date, renewal date or EMI date in any tab and it shows up here.</div>`}
+  <p class="note" style="margin-top:1.25rem">Virasat can't remind you because it keeps nothing. The calendar file puts these dates, with a 3-day alert, into Google Calendar, Outlook or your phone's calendar. "Add to Google Calendar" opens Google with only that item's title and date.</p>`;
+}
+
+function renderSummary(){
+  const T = totals(), n = totalEntries();
+  const rows = selectedCats().map(c => { const p = T.perCat[c.id];
+    const kind = c.id === 'lent' ? 'Net' : c.val ? KIND_LABEL[c.val.kind] : '';
+    return `<tr class="clickable" data-act="view" data-v="cat:${c.id}"><td>${esc(c.name)}</td><td class="num">${p.count || '–'}</td><td class="muted">${kind}</td><td class="num">${p.value ? inr(p.value) : '–'}</td><td class="num">${p.yearly ? inr(p.yearly) : '–'}</td></tr>`; }).join('');
+  const soon = upcomingItems().filter(i => i.days >= 0 && i.days <= 30);
+  return `<div class="cat-h"><div class="eyebrow">${S.preparedBy ? esc(S.preparedBy) : 'Your list'}</div><h2>Overview</h2>
+    <p>${n ? `${n} ${n === 1 ? 'entry' : 'entries'} across ${selectedCats().filter(c => list(c.id).length).length} categories. Values are your own estimates.` : 'Nothing listed yet. Pick a category on the left to begin.'}</p></div>
+  ${commonBlock()}
+  <div class="stats">
+    <div class="stat"><span>Assets (approx.)</span><b>${inr(T.asset) || '₹0'}</b></div>
+    <div class="stat"><span>Insurance cover</span><b>${inr(T.cover) || '₹0'}</b></div>
+    <div class="stat debt"><span>Owed</span><b>${inr(T.debt) || '₹0'}</b></div>
+    <div class="stat"><span>Regular payments / yr</span><b>${inr(T.yearly) || '₹0'}</b></div>
+  </div>
+  ${soon.length ? `<div class="tip" style="margin-bottom:1.25rem"><b>Due soon</b><span>${soon.slice(0, 3).map(i => `${esc(i.label)}: ${esc(i.title)} (${dueStatus(i.days)[1].toLowerCase()})`).join('; ')}${soon.length > 3 ? ` and ${soon.length - 3} more` : ''}. <button class="btn small ghost" data-act="view" data-v="upcoming">See all</button></span></div>` : ''}
+  <div class="tbl-wrap"><table><thead><tr><th>Category</th><th class="num">Entries</th><th></th><th class="num">Amount</th><th class="num">Payments / yr</th></tr></thead><tbody>${rows}</tbody></table></div>${S.cats.has('holdings') && list('holdings').length ? '<p class="footnote">Share holdings are a detail of your demat accounts, so they are not added again to the asset total.</p>' : ''}`;
+}
+
+/* ---------- calendar ---------- */
+function gcalLink(i){
+  const d = i.date, e = new Date(d); e.setDate(e.getDate() + 1);
+  const f = x => `${x.getFullYear()}${pad(x.getMonth() + 1)}${pad(x.getDate())}`;
+  const p = new URLSearchParams({ action:'TEMPLATE', text:`${i.label}: ${i.title}`, dates:`${f(d)}/${f(e)}`, details:`From Virasat. ${isFinite(i.amount) ? 'Amount: ' + inr(i.amount) : ''}`.trim() });
+  if (i.freq) p.set('recur', 'RRULE:' + rrule(i.freq));
+  return 'https://calendar.google.com/calendar/render?' + p.toString();
+}
+function rrule(freq){ return { 'Monthly':'FREQ=MONTHLY', 'Quarterly':'FREQ=MONTHLY;INTERVAL=3', 'Half-yearly':'FREQ=MONTHLY;INTERVAL=6', 'Yearly':'FREQ=YEARLY' }[freq]; }
+function buildIcs(items){
+  const icsEsc = s => String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+  const f = x => `${x.getFullYear()}${pad(x.getMonth() + 1)}${pad(x.getDate())}`;
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+  const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Virasat//EN', 'CALSCALE:GREGORIAN'];
+  for (const i of items) {
+    const end = new Date(i.date); end.setDate(end.getDate() + 1);
+    L.push('BEGIN:VEVENT', `UID:${uid()}-${f(i.date)}@virasat`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${f(i.date)}`, `DTEND;VALUE=DATE:${f(end)}`,
+      `SUMMARY:${icsEsc(i.label + ': ' + i.title)}`, `DESCRIPTION:${icsEsc((isFinite(i.amount) ? 'Amount: ' + inr(i.amount) + '. ' : '') + 'From Virasat (' + i.cat.name + ')')}`);
+    if (i.freq) L.push('RRULE:' + rrule(i.freq));
+    L.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:Reminder', 'TRIGGER:-P3D', 'END:VALARM', 'END:VEVENT');
+  }
+  L.push('END:VCALENDAR');
+  return L.join('\r\n');
+}
+
+/* ---------- files ---------- */
+async function saveFile(name, data, type){
+  const blob = data instanceof Blob ? data : new Blob([data], { type });
+  if (!OFFLINE && window.claude && window.claude.use) {
+    let d = null; try { d = await window.claude.use('downloads'); } catch (_) {}
+    if (d) {
+      try { await d.save({ filename:name, data:blob }); toast('Saved ' + name); return true; }
+      catch (err) {
+        if (err && err.code === 'declined') { toast('Download cancelled'); return false; }
+        if (err && err.code === 'rejected_extension') { toast('This file type can\'t be saved here. Use Add to Google Calendar instead.'); return false; }
+        if (err && err.code === 'rate_limited') { toast('A save prompt is already open.'); return false; }
+      }
+    }
+  }
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  toast('Downloaded ' + name);
+  return true;
+}
+function fileStamp(){ return iso(new Date()); }
+function needExcel(){
+  if (typeof ExcelJS === 'undefined') { toast('The Excel engine has not loaded. Check your connection once, then try again.'); return false; }
+  return true;
+}
+
+const XL = { head:'FF0C5862', headFont:'FFFFFFFF', band:'FFEAF0EF', gold:'FFC77F00' };
+const NUMFMT_INR = '[>=10000000]"₹"##\\,##\\,##\\,##0;[>=100000]"₹"##\\,##\\,##0;"₹"#,##0';
+const NUMFMT_DATE = 'dd-mmm-yyyy';
+const colName = n => { let s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
+const toXlDate = s => { const d = parseISO(s); return d ? new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) : null; };
+function styleHeader(ws, n){
+  const r = ws.getRow(1); r.height = 22;
+  for (let c = 1; c <= n; c++) { const cell = r.getCell(c);
+    cell.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:XL.head } };
+    cell.font = { bold:true, color:{ argb:XL.headFont } };
+    cell.alignment = { vertical:'middle', wrapText:false }; }
+  ws.views = [{ state:'frozen', ySplit:1 }];
+}
+
+async function buildWorkbook(st){
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Virasat'; wb.created = new Date();
+  const family = st.mode === 'family';
+  const cats = CATS.filter(c => st.cats.has(c.id));
+  const ent = id => st.entries[id] || [];
+  const common = st.common || {};
+  const ids = st.ids || { mobiles:[], emails:[] };
+  const meta = { app:'virasat', v:1, mode:st.mode, people:st.people, preparedBy:st.preparedBy, common, ids, cats:cats.map(c => c.id), sheets:{} };
+
+  // Read me
+  const rm = wb.addWorksheet('Read me first', { properties:{ tabColor:{ argb:XL.gold } } });
+  rm.getColumn(1).width = 110;
+  const lines = [
+    ['Virasat: what my family should know', 'title'],
+    [`Prepared by ${st.preparedBy || 'me'} on ${DATEF.format(new Date())}.`, 'muted'],
+    ...(/^https?:\/\//i.test(common.link || '') ? [[common.link, 'link']] : []),
+    ...(common.docs ? [[`Original papers are kept at: ${common.docs}`, 'h']] : []),
+    ...(ids.mobiles.length ? [[`Mobile numbers that get OTPs (keep these SIMs active): ${ids.mobiles.join(', ')}`, 'h']] : []),
+    ...(ids.emails.length ? [[`Linked email addresses: ${ids.emails.join(', ')}`, 'h']] : []),
+    ...(common.link || common.docs || ids.mobiles.length || ids.emails.length ? [['Where a row leaves these blank, the ones above apply.', 'muted']] : []),
+    ['', ''],
+    ['What this file is', 'h'],
+    ['A list of my bank accounts, insurance, investments, property, loans and important contacts, so nothing is missed.', ''],
+    ['Each tab at the bottom is one category. Use the filter arrows in the header row to sort or filter.', ''],
+    ['"Upcoming" lists premiums, renewals, EMIs and maturities in date order. "Summary" shows totals.', ''],
+    ['', ''],
+    ['What it does NOT contain', 'h'],
+    ['No passwords, PINs or full account numbers. To claim, use the institution, policy or folio numbers, nominee and document locations listed here.', ''],
+    ['Start with the "Will & documents" and "Key contacts" tabs if they exist.', ''],
+    ['', ''],
+    ['Keep it safe', 'h'],
+    ['Lock this file with a password: in Excel on Windows, File > Info > Protect Workbook > Encrypt with Password.', ''],
+    ['Tell the password to one or two people you trust, or keep it in a sealed envelope with your will.', ''],
+    ['', ''],
+    ['Keep it current', 'h'],
+    ['Update it once a year. Open Virasat in a browser, choose "Import my data", make changes and export again. You can also edit this file directly.', ''],
+    ['', ''],
+    ['Made with Virasat by gauravkhurana.com (gauravkhurana.com/virasat). This file was created in the browser and nothing was sent to any server.', 'muted'],
+  ];
+  lines.forEach(([t, k], i) => { const c = rm.getCell(i + 1, 1); c.value = k === 'link' ? { text:`All scanned documents: ${t}`, hyperlink:t } : t; c.alignment = { wrapText:true, vertical:'top' };
+    if (k === 'link') c.font = { bold:true, underline:true, color:{ argb:XL.head } };
+    if (k === 'title') { c.font = { bold:true, size:18, color:{ argb:XL.head } }; rm.getRow(i + 1).height = 30; }
+    if (k === 'h') c.font = { bold:true, size:12, color:{ argb:XL.head } };
+    if (k === 'muted') c.font = { italic:true, color:{ argb:'FF56696D' } }; });
+
+  // Summary
+  const sm = wb.addWorksheet('Summary');
+  sm.columns = [{ header:'Category', width:32 }, { header:'Entries', width:10 }, { header:'Kind', width:10 }, { header:'Amount (₹)', width:18 }, { header:'Payments per year (₹)', width:22 }];
+  styleHeader(sm, 5);
+  const T = totalsFor(st);
+  for (const c of cats) { const p = T.perCat[c.id];
+    sm.addRow([c.name, p.count, c.id === 'lent' ? 'Net' : c.val ? KIND_LABEL[c.val.kind] : '', p.value || null, p.yearly || null]); }
+  sm.addRow([]);
+  [['Total assets (approx.)', T.asset], ['Total insurance cover', T.cover], ['Total owed', T.debt], ['Regular payments per year', T.yearly]]
+    .forEach(([l, v]) => { const r = sm.addRow([l, null, null, v]); r.font = { bold:true }; });
+  sm.getColumn(4).numFmt = NUMFMT_INR; sm.getColumn(5).numFmt = NUMFMT_INR;
+
+  // Upcoming
+  const up = wb.addWorksheet('Upcoming', { properties:{ tabColor:{ argb:XL.head } } });
+  const upCols = [['Date', 14], ['Days left', 10], ['What', 26], ['Details', 36], ['Category', 26], ...(family ? [['Belongs to', 14]] : []), ['Amount (₹)', 14], ['Repeats', 12]];
+  up.columns = upCols.map(([h, w]) => ({ header:h, width:w }));
+  styleHeader(up, upCols.length);
+  const items = upcomingFor(st);
+  items.forEach((i, idx) => { const r = idx + 2;
+    up.addRow([new Date(Date.UTC(i.date.getFullYear(), i.date.getMonth(), i.date.getDate())), { formula:`A${r}-TODAY()`, result:i.days }, i.label, i.title, i.cat.name, ...(family ? [i.owner] : []), isFinite(i.amount) ? i.amount : null, i.freq || 'Once']); });
+  up.getColumn(1).numFmt = NUMFMT_DATE; up.getColumn(2).numFmt = '0;[Red]-0';
+  up.getColumn(family ? 7 : 6).numFmt = NUMFMT_INR;
+  up.autoFilter = { from:{ row:1, column:1 }, to:{ row:Math.max(items.length + 1, 2), column:upCols.length } };
+
+  // Lists sheet for dropdowns
+  const ls = wb.addWorksheet('_lists', { state:'veryHidden' });
+  let listCol = 0; const listRef = new Map();
+  const listFor = opts => { const k = opts.join('\u0001'); if (listRef.has(k)) return listRef.get(k);
+    listCol++; opts.forEach((o, i) => { ls.getCell(i + 1, listCol).value = o; });
+    const ref = `'_lists'!$${colName(listCol)}$1:$${colName(listCol)}$${opts.length}`; listRef.set(k, ref); return ref; };
+  const peopleList = st.people.length ? st.people : [];
+
+  // Category sheets
+  for (const cat of cats) {
+    const ws = wb.addWorksheet(cat.sheet);
+    const fields = allFields(cat, family);
+    ws.columns = fields.map(f => ({ header:f.l, key:f.k, width:Math.min(40, Math.max(12, f.l.length + 4, f.t === 'note' ? 36 : f.t === 'url' ? 30 : 0)) }));
+    styleHeader(ws, fields.length);
+    for (const e of ent(cat.id)) {
+      const row = {};
+      for (const f of fields) { const v = e[f.k]; if (v === '' || v == null) continue;
+        if (f.t === 'date') row[f.k] = toXlDate(v) || v;
+        else if (f.t === 'money' || f.t === 'num') { const n = num(v); row[f.k] = isFinite(n) ? n : v; }
+        else if (f.t === 'url' && /^https?:\/\//i.test(v)) row[f.k] = { text:v, hyperlink:v };
+        else row[f.k] = String(v); }
+      ws.addRow(row);
+    }
+    const lastRow = 500;
+    fields.forEach((f, i) => { const col = ws.getColumn(i + 1);
+      if (f.t === 'date') col.numFmt = NUMFMT_DATE;
+      if (f.t === 'money') col.numFmt = NUMFMT_INR;
+      if (f.t === 'note') col.alignment = { wrapText:true, vertical:'top' };
+      const opts = f.t === 'select' ? f.o : f.t === 'owner' ? peopleList : f.t === 'linked' ? ((st.ids || {})[f.list] || []) : null;
+      if (opts && opts.length) {
+        const ref = listFor(opts);
+        const L = colName(i + 1);
+        ws.dataValidations.add(`${L}2:${L}${lastRow}`, { type:'list', allowBlank:true, formulae:[ref], showErrorMessage:false });
+      }
+      if (f.t === 'date') { const L = colName(i + 1);
+        ws.dataValidations.add(`${L}2:${L}${lastRow}`, { type:'date', operator:'greaterThan', allowBlank:true, formulae:[new Date(Date.UTC(1900, 0, 2))], showErrorMessage:true, errorStyle:'warning', errorTitle:'Date', error:'Enter a date, for example 15-03-2027.' }); }
+    });
+    ws.getRow(1).alignment = { vertical:'middle' };
+    ws.autoFilter = { from:{ row:1, column:1 }, to:{ row:Math.max(ent(cat.id).length + 1, 2), column:fields.length } };
+    meta.sheets[cat.sheet] = { cat:cat.id, keys:fields.map(f => f.k) };
+  }
+
+  const ms = wb.addWorksheet('_virasat', { state:'veryHidden' });
+  ms.getCell('A1').value = JSON.stringify(meta);
+  return wb;
+}
+
+function withState(st, fn){ const saved = { mode:S.mode, people:S.people, cats:S.cats, entries:S.entries };
+  Object.assign(S, { mode:st.mode, people:st.people, cats:st.cats, entries:st.entries });
+  try { return fn(); } finally { Object.assign(S, saved); } }
+const totalsFor = st => withState(st, totals);
+const upcomingFor = st => withState(st, upcomingItems);
+
+async function exportXlsx(st, name){
+  if (!needExcel()) return false;
+  try {
+    const wb = await buildWorkbook(st);
+    const buf = await wb.xlsx.writeBuffer();
+    return await saveFile(name, new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  } catch (err) { console.error(err); toast('Could not build the Excel file.'); return false; }
+}
+
+function cellToValue(cell, f){
+  let v = cell.value;
+  if (v == null) return '';
+  if (typeof v === 'object' && !(v instanceof Date)) {
+    if (v.richText) v = v.richText.map(r => r.text).join('');
+    else if (v.hyperlink) v = f.t === 'url' ? v.hyperlink : (v.text ?? v.hyperlink);
+    else if ('result' in v) v = v.result;
+    else if ('text' in v) v = v.text;
+    else if (v.error) return '';
+  }
+  return convertValue(v, f);
+}
+function convertValue(v, f){
+  if (v == null || v === '') return '';
+  if (f.t === 'date') {
+    if (v instanceof Date) return `${v.getUTCFullYear()}-${pad(v.getUTCMonth() + 1)}-${pad(v.getUTCDate())}`;
+    if (typeof v === 'number') { const d = new Date(Math.round((v - 25569) * 86400000)); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`; }
+    const s = String(v).trim(); let m;
+    if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s))) return `${m[1]}-${pad(m[2])}-${pad(m[3])}`;
+    if ((m = /^(\d{1,2})[\/.\- ](\d{1,2})[\/.\- ](\d{4})$/.exec(s))) return `${m[3]}-${pad(m[2])}-${pad(m[1])}`;
+    const mon = /^(\d{1,2})[\s\-]([A-Za-z]{3})[a-z]*[\s\-,]+(\d{4})$/.exec(s);
+    if (mon) { const i = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(mon[2].toLowerCase()); if (i >= 0) return `${mon[3]}-${pad(i + 1)}-${pad(mon[1])}`; }
+    return '';
+  }
+  if (v instanceof Date) return iso(v);
+  if (f.t === 'money' || f.t === 'num') {
+    const n = typeof v === 'number' ? v : num(String(v).replace(/rs\.?|inr|[()]/gi, ''));
+    if (isFinite(n)) return String(Math.round(n * 100) / 100);
+    return /^[-–—\s]*$/.test(String(v)) ? '' : String(v).trim();
+  }
+  let t = String(v).trim();
+  if (f.partial) { const d = t.replace(/\D/g, ''); if (d.length > 4) t = d.slice(-4); }
+  return t;
+}
+
+async function importXlsx(file){
+  if (!needExcel()) return;
+  let wb;
+  try { wb = new ExcelJS.Workbook(); await wb.xlsx.load(await file.arrayBuffer()); }
+  catch (err) { console.error(err); toast('That file could not be opened. Choose an .xlsx file saved from Virasat or the template.'); return; }
+  let meta = null; const msh = wb.getWorksheet('_virasat');
+  if (msh) { try { meta = JSON.parse(String(msh.getCell('A1').value || '')); } catch (_) {} }
+  const st = { mode:meta?.mode || 'me', people:[...(meta?.people || [])], preparedBy:meta?.preparedBy || '', common:{ link:meta?.common?.link || '', docs:meta?.common?.docs || '' }, ids:{ mobiles:[...(meta?.ids?.mobiles || [])], emails:[...(meta?.ids?.emails || [])] }, cats:new Set(), entries:{} };
+  let found = 0, rowsRead = 0; const owners = new Set();
+  wb.eachSheet(ws => {
+    const catId = meta?.sheets?.[ws.name]?.cat || CATS.find(c => c.sheet.toLowerCase() === ws.name.toLowerCase().trim())?.id;
+    const cat = CAT[catId]; if (!cat) return;
+    found++; st.cats.add(cat.id);
+    const fields = allFields(cat, true);
+    const byLabel = new Map(fields.flatMap(f => [[f.l.toLowerCase(), f], [f.k.toLowerCase(), f]]));
+    const cols = [];
+    ws.getRow(1).eachCell((c, col) => { const f = byLabel.get(String(c.value ?? '').trim().toLowerCase()); if (f) cols.push([col, f]); });
+    const out = [];
+    for (let r = 2; r <= ws.rowCount; r++) {
+      const row = ws.getRow(r); const e = { id:uid() }; let any = false;
+      for (const [col, f] of cols) { const v = cellToValue(row.getCell(col), f); if (v !== '') { e[f.k] = v; any = true; } }
+      if (any) { out.push(e); rowsRead++; if (e.owner) owners.add(e.owner); for (const f of fields) if (f.t === 'linked' && e[f.k] && !st.ids[f.list].includes(e[f.k])) st.ids[f.list].push(e[f.k]); }
+    }
+    st.entries[cat.id] = out;
+  });
+  if (!found) { toast('No Virasat tabs found in that file. Start from the blank template so the tab names match.'); return; }
+  if (owners.size) { st.mode = 'family'; for (const o of owners) if (!st.people.includes(o)) st.people.push(o); }
+  Object.assign(S, { mode:st.mode, people:st.people, preparedBy:st.preparedBy, common:st.common, ids:st.ids, cats:st.cats, entries:st.entries, sample:false, dirty:false, editing:null });
+  const first = selectedCats().find(c => list(c.id).length);
+  S.view = 'summary';
+  render();
+  toast(`Loaded ${rowsRead} ${rowsRead === 1 ? 'entry' : 'entries'} from ${found} ${found === 1 ? 'tab' : 'tabs'}`);
+}
+
+/* ---------- sample data ---------- */
+function sampleState(){
+  const d = n => { const x = today(); x.setDate(x.getDate() + n); return iso(x); };
+  const y = (yr, m, dd) => `${yr}-${pad(m)}-${pad(dd)}`;
+  const R = 'Ramesh', Su = 'Sunita';
+  const E = { will:[
+      { item:'Will', location:'Godrej almirah, bedroom, locker drawer', executor:'Anil Sharma (brother)', executorPhone:'98100 00001', registered:'Yes', date:y(2024,2,14), lawyer:'Adv. K. Mehta, Saket court', owner:R },
+      { item:'Property papers', location:'SBI locker 214, Sector 18', owner:R },
+      { item:'Identity documents (PAN, Aadhaar, passport)', location:'Blue file, study cupboard', owner:Su }],
+    contacts:[
+      { name:'Pooja Gupta', role:'Chartered accountant', phone:'98110 00002', helps:'Files our ITR, has all Form 16s', email:'pooja.ca@example.com' },
+      { name:'Vinod Kumar', role:'Insurance agent', phone:'98120 00003', helps:'Both LIC policies' },
+      { name:'Neha Arora', role:'Employer HR', phone:'98130 00004', helps:'Sunita\'s group cover and RSUs at Contoso' }],
+    bank:[
+      { bank:'State Bank of India', type:'Savings', last4:'4521', balance:'185000', mobile:'Ramesh 98100 00011', contactPerson:'Manish (branch RM)', contactPhone:'0120 400 0000', branch:'Sector 18, Noida', holding:'Joint, either or survivor', jointWith:Su, govtCover:'Both', nominee:Su, owner:R },
+      { bank:'HDFC Bank', type:'Salary', last4:'7788', balance:'92000', mobile:'Sunita 98100 00022', email:'sunita.sample@example.com', nominee:R, owner:Su },
+      { bank:'Punjab National Bank', type:'Savings', last4:'0193', balance:'12000', branch:'Karnal (old account)', nominee:'Not set', owner:R, notes:'Not used since 2015. May be dormant.' }],
+    deposits:[
+      { institution:'HDFC Bank', type:'Fixed deposit', principal:'300000', maturityDate:d(40), ref:'3301', rate:'7.1', maturityAmt:'345000', autoRenew:'No', nominee:R, owner:Su },
+      { institution:'SBI', type:'Recurring deposit', principal:'60000', rdAmt:'5000', rdDate:d(9), maturityDate:y(2027,9,5), owner:R }],
+    locker:[{ bank:'SBI', branch:'Sector 18, Noida', keyAt:'Steel almirah, small red pouch', rentDue:d(75), lockerNo:'214', jointWith:Su, rent:'3000', contents:'Gold jewellery, property papers', nominee:Su, owner:R }],
+    life:[
+      { insurer:'LIC', plan:'Jeevan Anand', policyNo:'SAMPLE-900001', sumAssured:'500000', premium:'24500', freq:'Yearly', dueDate:d(12), insured:R, maturityDate:y(2034,3,28), maturityAmt:'1150000', agent:'Vinod Kumar, 98120 00003', nominee:Su, docs:'File cabinet, blue folder', owner:R },
+      { insurer:'LIC', plan:'New Endowment', policyNo:'SAMPLE-900002', sumAssured:'300000', premium:'6200', freq:'Quarterly', dueDate:d(50), insured:Su, maturityDate:y(2031,11,15), nominee:R, owner:Su }],
+    term:[{ insurer:'HDFC Life', policyNo:'SAMPLE-TRM-001', sumAssured:'10000000', premium:'14800', freq:'Yearly', dueDate:d(150), coverTill:y(2055,6,30), source:'Bought myself', riders:'Accidental death', nominee:Su, owner:R }],
+    health:[
+      { insurer:'Star Health', type:'Family floater', sumInsured:'1000000', memberId:'SAMPLE-55501', renewal:d(5), policyName:'Family Health Optima', members:'Ramesh, Sunita, Aarav, Anaya', tpa:'In-house', helpline:'1800 000 0000', premium:'28400', owner:R },
+      { insurer:'ICICI Lombard', type:'Employer group cover', sumInsured:'500000', memberId:'SAMPLE-GRP-778', renewal:d(110), tpa:'Medi Assist', employer:'Contoso India (sample)', owner:Su }],
+    otherIns:[{ type:'PMSBY (govt accident cover)', insurer:'SBI (auto-debit)', cover:'200000', renewal:d(230), premium:'20', freq:'Yearly', nominee:Su, owner:R }],
+    demat:[{ broker:'Zerodha', clientId:'SAMPLE01', value:'640000', depository:'CDSL', linkedBank:'SBI ••4521', physical:'None', nominee:Su, owner:R }],
+    mf:[
+      { amc:'Parag Parikh MF', folio:'SAMPLE12345/01', value:'420000', sip:'10000', sipDate:d(3), schemes:'Flexi Cap Fund', mode:'Direct', rta:'CAMS', nominee:Su, owner:R },
+      { amc:'SBI MF', folio:'SAMPLE67890', value:'150000', schemes:'Small Cap Fund', mode:'Regular', rta:'CAMS', nominee:R, owner:Su }],
+    bonds:[{ type:'Sovereign Gold Bond', issuer:'SGB 2021-22 Series VIII', amount:'96000', maturityDate:y(2029,11,29), heldIn:'Demat', units:'20', nominee:Su, owner:R }],
+    smallSavings:[{ scheme:'PPF', heldAt:'SBI, Sector 18', balance:'820000', depositDue:y(today().getMonth() < 3 ? today().getFullYear() : today().getFullYear() + 1, 3, 31), ref:'5521', yearlyDeposit:'150000', maturityDate:y(2031,3,31), nominee:Su, owner:R }],
+    espp:[{ employer:'Contoso Corp (sample)', plan:'RSU', platform:'E*Trade', value:'2100000', vestDate:d(55), country:'USA', units:'42', beneficiary:'No', hr:'Neha Arora', owner:Su }],
+    retirement:[
+      { type:'EPF', idNo:'SAMPLE-UAN-0001', balance:'1240000', nomineeSet:'Not sure', employer:'Fabrikam Ltd (sample)', owner:R },
+      { type:'NPS Tier I', idNo:'SAMPLE-PRAN-01', balance:'380000', nomineeSet:'Yes', contribution:'50000', contributionDue:d(170), owner:Su }],
+    property:[
+      { type:'House / flat', address:'B-402, Green Valley, Sector 50, Noida', value:'9500000', papersAt:'SBI locker 214', ownership:'Joint', coOwners:Su, taxAmt:'6500', taxDue:d(200), owner:R },
+      { type:'Inherited (not yet transferred)', address:'Agricultural land, village Rampur, Karnal', value:'4000000', papersAt:'With Anil (brother)', notes:'Mutation into my name still pending.', owner:R }],
+    gold:[{ item:'Gold jewellery (wedding set, 4 bangles)', weight:'120', keptAt:'SBI locker 214', bills:'Blue file', owner:Su }],
+    vehicle:[{ model:'Maruti Baleno', regNo:'UP16 XX 0000', insRenewal:d(22), pucDue:d(9), type:'Car', insurer:'Tata AIG', rcAt:'Glovebox (copy), original in blue file', loan:'No loan', owner:R }],
+    loans:[{ type:'Home loan', lender:'SBI', emi:'42000', emiDate:d(6), outstanding:'3200000', endDate:y(2039,4,5), ref:'8812', insured:'Yes', coBorrower:Su, owner:R }],
+    cards:[{ bank:'HDFC Bank', cardName:'Regalia', last4:'4417', billDate:d(14), autopay:'Yes', addOn:Su, annualFee:'2500', freeCover:'Yes', owner:R }],
+    lent:[{ direction:'I lent', person:'Rakesh (cousin)', amount:'50000', dueDate:d(95), date:y(2025,8,1), proof:'WhatsApp message, screenshot in Drive', owner:R }],
+    holdings:[
+      { name:'RELIANCE', isin:'INE002A01018', qty:'40', value:'118000', broker:'Zerodha', avgCost:'2450', owner:R },
+      { name:'NIFTYBEES', qty:'300', value:'81000', broker:'Zerodha', owner:R }],
+    employer:[
+      { benefit:'Group health insurance', employer:'Contoso India (sample)', cover:'500000', provider:'ICICI Lombard', covers:'Sunita, Ramesh, 2 children', contactPerson:'Neha Arora (HR)', contactPhone:'98130 00004', owner:Su },
+      { benefit:'Group term life insurance', employer:'Contoso India (sample)', cover:'3000000', provider:'HDFC Life', policyNo:'SAMPLE-GTL-42', nominee:R, contactPerson:'Neha Arora (HR)', owner:Su },
+      { benefit:'Gratuity', employer:'Fabrikam Ltd (sample)', cover:'420000', nominee:Su, notes:'Form F nominee filed with HR in 2019.', owner:R }],
+    digital:[
+      { service:'Gmail and Google Photos', username:'ramesh.sample@example.com', action:'Download data, then close', legacy:'No', owner:R },
+      { service:'Domain sharmafamily.example', username:'ramesh.sample@example.com', action:'Keep running', renewal:d(120), cost:'900', owner:R }],
+  };
+  for (const k in E) E[k] = E[k].map(e => ({ id:uid(), ...e }));
+  return { mode:'family', people:[R, Su], preparedBy:'Ramesh Sharma (sample)', common:{ link:'https://drive.google.com/drive/folders/SAMPLE-family-papers', docs:'Blue file, study cupboard' }, ids:{ mobiles:['Ramesh 98100 00011', 'Sunita 98100 00022'], emails:['ramesh.sample@example.com', 'sunita.sample@example.com'] }, cats:new Set(Object.keys(E)), entries:E };
+}
+
+/* ---------- overlay sheets ---------- */
+function openSheet(html, opts = {}){ const sh = $('#sheet'); sh.className = 'sheet' + (opts.wide ? ' wide' : ''); sh.innerHTML = html; $('#overlay').hidden = false; if (opts.keepFocus) return; const f = sh.querySelector('button'); if (f) f.focus(); }
+function closeSheet(){ $('#overlay').hidden = true; $('#sheet').innerHTML = ''; }
+const NEVER = '<div class="never"><span>Passwords</span><span>PINs / MPINs</span><span>OTPs</span><span>CVV</span><span>Full card numbers</span><span>Full Aadhaar</span><span>Seed phrases</span><span>Net-banking IDs</span></div>';
+function privacySheet(){
+  openSheet(`<h2 id="sheetTitle">Your data stays here</h2>
+  <p>Virasat is a single web page. There is no account, no database and no server that receives what you type.</p>
+  <h3>What happens to your entries</h3>
+  <ul><li><b>Kept in this tab only.</b> Entries live in the page's memory. Close or refresh the tab and they are gone.</li>
+  <li><b>Never sent anywhere.</b> The page makes no network requests with your data. No analytics, no cookies, no ads.</li>
+  <li><b>Your Excel is your copy.</b> It is created inside your browser and saved straight to your device.</li></ul>
+  <h3>Check it yourself</h3>
+  <ul><li>Load the page, then switch off Wi-Fi or mobile data. Add entries and download the Excel. It all still works.</li>
+  <li>The page's security settings block it from sending data to any website, so it cannot leak anything even by mistake.</li>
+  <li>The only official address is <b>gauravkhurana.com/virasat</b>. Don't enter your details into copies hosted anywhere else.</li></ul>
+  <h3>Never store these, here or anywhere</h3>${NEVER}
+  <p>Your family doesn't need logins to claim. They need to know what exists, who the nominee is, and where the papers are.</p>
+  <div class="acts"><button class="btn primary" data-act="close">Got it</button></div>`);
+}
+function lockSheet(){
+  openSheet(`<h2 id="sheetTitle">Now lock your file</h2>
+  <p>Your Excel lists everything you own. Put a password on it before you store or share it.</p>
+  <h3>Lock it</h3>
+  <ul><li><b>Excel on Windows:</b> File > Info > Protect Workbook > Encrypt with Password.</li>
+  <li><b>Excel on Mac:</b> File > Passwords > Password to open.</li>
+  <li><b>LibreOffice:</b> File > Save As, then tick "Save with password".</li>
+  <li><b>No Excel?</b> Put the file in a password-protected zip (7-Zip with AES-256 on Windows).</li></ul>
+  <h3>Store and share it</h3>
+  <ul><li><b>Google Drive or OneDrive:</b> upload the locked file as it is. Don't convert it to Google Sheets, because that removes the password. Share it only with named family members.</li>
+  <li><b>Tell the password</b> to one or two people you trust, or seal it in an envelope with your will. Without it, the file is useless to your family.</li>
+  <li><b>Update once a year.</b> Pick a date you won't forget, such as your birthday.</li></ul>
+  <div class="acts"><button class="btn primary" data-act="close">Done</button></div>`);
+}
+function confirmSheet(title, text, act, label){
+  openSheet(`<h2 id="sheetTitle">${esc(title)}</h2><p>${esc(text)}</p><div class="acts"><button class="btn" data-act="close">Cancel</button><button class="btn primary" data-act="${act}">${esc(label)}</button></div>`);
+}
+
+/* ---------- actions ---------- */
+let pendingFile = null;
+function readForm(form){
+  const cat = CAT[form.dataset.cat], out = {};
+  for (const f of allFields(cat, isFamily())) {
+    const el = form.elements[f.k]; if (!el) continue;
+    let v = el.value.trim();
+    if (f.t === 'money' || f.t === 'num') v = v.replace(/[₹,\s]/g, '');
+    out[f.k] = v;
+  }
+  return out;
+}
+function saveEntry(form){
+  const cat = CAT[form.dataset.cat], data = readForm(form);
+  if (!Object.values(data).some(Boolean)) { toast('Fill in at least one field, or press Cancel.'); return false; }
+  for (const k in data) if (data[k] === '') delete data[k];
+  const ed = S.editing;
+  if (ed.id === 'new') list(cat.id).unshift({ id:uid(), ...data });
+  else { const arr = list(cat.id), i = arr.findIndex(x => x.id === ed.id); if (i >= 0) arr[i] = { id:ed.id, ...data }; }
+  S.editing = null; markDirty(); render(); toast('Saved');
+  return true;
+}
+
+const ACTIONS = {
+  home(){ guard(() => { S.view = 'setup'; S.editing = null; render(); window.scrollTo(0, 0); }); },
+  privacy: privacySheet,
+  close: closeSheet,
+  mode(b){ S.mode = b.dataset.mode; if (S.mode === 'family' && !S.people.length) S.people = []; render(); },
+  rmPerson(b){ S.people.splice(+b.dataset.i, 1); render(); },
+  pick(b){ const p = b.dataset.p; S.cats = new Set(p === 'all' ? CATS.map(c => c.id) : p === 'common' ? COMMON_PICKS : []);
+    for (const c of CATS) if (list(c.id).length) S.cats.add(c.id); render(); },
+  start(){ if (isFamily() && !S.people.length) S.people = [S.preparedBy || 'Me'];
+    if (!S.cats.size) return; const v = S.view; S.view = selectedCats().some(c => list(c.id).length) ? 'summary' : 'cat:' + selectedCats()[0].id; if (v !== S.view) window.scrollTo(0, 0); render(); },
+  view(b){ const v = b.dataset.v; guard(() => { S.editing = null; const was = S.view; S.view = v; render(); const c = $('#content'); if (was === 'setup' || (c && c.getBoundingClientRect().top < 0)) window.scrollTo(0, 0); }); },
+  add(){ guard(() => { S.editing = { cat:S.view.slice(4), id:'new', draft:{} }; render(); focusForm(); }); },
+  edit(b){ const id = b.dataset.id; guard(() => { S.editing = { cat:S.view.slice(4), id }; render(); focusForm(); }); },
+  cancel(){ hideUnsaved(); S.editing = null; render(); },
+  del(b){ if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Confirm delete'; setTimeout(() => { if (b.isConnected) { b.classList.remove('armed'); b.textContent = 'Delete'; } }, 4000); return; }
+    const arr = list(S.editing.cat); const i = arr.findIndex(x => x.id === b.dataset.id); if (i >= 0) arr.splice(i, 1);
+    S.editing = null; markDirty(); render(); toast('Deleted'); },
+  load(){ guard(() => { if (!S.editing) render(); $('#fileIn').value = ''; $('#fileIn').click(); }); },
+  export(){ guard(() => { if (!S.editing) render(); if (!totalEntries()) { toast('Add at least one entry first.'); return; } exportSheet(); }); },
+  exportXlsx(){ closeSheet(); ACTIONS.doExport(); },
+  async exportPdf(){ if (!needPdf()) return; const pass = (($('#pdfPass') || {}).value || '').trim();
+    const who = (S.preparedBy || '').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-');
+    try { const doc = buildPdf(S, pass); const ok = await saveFile(`Virasat${who ? '-' + who : ''}-${fileStamp()}.pdf`, doc.output('blob')); if (ok) pdfDoneSheet(!!pass); }
+    catch (err) { console.error(err); toast('Could not build the PDF.'); } },
+  rmId(b){ S.ids[b.dataset.list].splice(+b.dataset.i, 1); render(); },
+  async doExport(){ if (!totalEntries()) { toast('Add at least one entry first.'); return; }
+    const who = (S.preparedBy || '').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-');
+    const ok = await exportXlsx(S, `Virasat${who ? '-' + who : ''}-${fileStamp()}.xlsx`);
+    if (ok) { S.dirty = false; lockSheet(); } },
+  async template(){ await exportXlsx({ mode:'family', people:S.people.length ? S.people : ['Self', 'Spouse'], preparedBy:'', cats:new Set(CATS.map(c => c.id)), entries:{} }, 'Virasat-blank-template.xlsx'); },
+  async sampleXlsx(){ await exportXlsx(sampleState(), 'Virasat-sample-made-up-data.xlsx'); },
+  sample(){ const s = sampleState(); Object.assign(S, { mode:s.mode, people:s.people, preparedBy:s.preparedBy, common:s.common, ids:s.ids, cats:s.cats, entries:s.entries, sample:true, dirty:false, view:'summary', editing:null }); render(); window.scrollTo(0, 0); },
+  fresh(){ Object.assign(S, { mode:'me', people:[], preparedBy:'', common:{ link:'', docs:'' }, ids:{ mobiles:[], emails:[] }, cats:new Set(COMMON_PICKS), entries:{}, sample:false, dirty:false, view:'setup', editing:null }); render(); window.scrollTo(0, 0); },
+  async ics(){ const items = upcomingItems().filter(i => i.days >= 0 || i.recurring);
+    if (!items.length) { toast('No upcoming dates to export yet.'); return; }
+    if (!OFFLINE && window.claude) { openSheet(`<h2 id="sheetTitle">Calendar file</h2><p>This preview can't save .ics files. Use "Add to Google Calendar" on each date instead. On gauravkhurana.com/virasat this button saves all ${items.length} dates as one calendar file.</p><div class="acts"><button class="btn primary" data-act="close">Close</button></div>`); return; }
+    await saveFile(`Virasat-reminders-${fileStamp()}.ics`, buildIcs(items), 'text/calendar'); },
+  uSave(){ const form = $('form[data-form="entry"]'); hideUnsaved(); if (form && saveEntry(form)) { const n = pendingNext; pendingNext = null; if (n) n(); } },
+  uDiscard(){ hideUnsaved(); S.editing = null; const n = pendingNext; pendingNext = null; if (n) n(); else render(); },
+  uStay(){ hideUnsaved(); pendingNext = null; const f = $('form[data-form="entry"]'); if (f) { f.scrollIntoView({ block:'center' }); const i = f.querySelector('input,select,textarea'); if (i) i.focus({ preventScroll:true }); } },
+  term(b){ const box = $('#termBox'), t = b.dataset.t, open = b.getAttribute('aria-expanded') === 'true';
+    document.querySelectorAll('.term').forEach(x => x.setAttribute('aria-expanded', 'false'));
+    if (open) { box.hidden = true; return; }
+    b.setAttribute('aria-expanded', 'true'); box.innerHTML = `<b>${esc(t)}:</b> ${esc(GLOSS[t] || '')}`; box.hidden = false; },
+  csvImport(){ guard(() => { if (!S.editing) render(); $('#csvIn').value = ''; $('#csvIn').click(); }); },
+  csvTemplate(){ const cat = CAT[S.view.slice(4)]; if (!cat) return; const q = x => /[",\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x;
+    saveFile(`Virasat-${cat.sheet.replace(/[^\w]+/g, '-')}-template.csv`, '﻿' + allFields(cat, isFamily()).map(f => q(f.l)).join(',') + '\r\n', 'text/csv'); },
+  csvGo(){ if (!CSVJOB) return; readFillInputs(); const rows = csvRowsMapped(), cat = CSVJOB.cat;
+    list(cat.id).push(...rows.map(e => ({ id:uid(), ...e }))); markDirty(); CSVJOB = null; closeSheet(); render();
+    toast(`Imported ${rows.length} ${rows.length === 1 ? cat.noun : plural(cat)}`); },
+  async confirmLoad(){ closeSheet(); if (pendingFile) { const f = pendingFile; pendingFile = null; await importXlsx(f); } },
+};
+/* ---------- PDF document ---------- */
+const pdfText = x => String(x ?? '').replace(/₹\s?/g, 'Rs. ').replace(/[–—]/g, '-').replace(/•/g, '*').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/…/g, '...').replace(/→/g, '->').replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, '?');
+function needPdf(){
+  if (!window.jspdf || !window.jspdf.jsPDF || !window.jspdf.jsPDF.API.autoTable) { toast('The PDF engine has not loaded. Check your connection once, then try again.'); return false; }
+  return true;
+}
+function buildPdf(st, password){
+  const { jsPDF } = window.jspdf;
+  const opts = { unit:'pt', format:'a4' };
+  if (password) opts.encryption = { userPassword:password, ownerPassword:password + '#virasat', userPermissions:['print', 'copy'] };
+  const doc = new jsPDF(opts);
+  const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), M = 42;
+  const INK = [19, 38, 43], MUTED = [86, 105, 109], PEA = [12, 88, 98], GOLD = [199, 127, 0], LINE = [213, 223, 221], SOFT = [234, 240, 239];
+  const family = st.mode === 'family';
+  const cats = CATS.filter(c => st.cats.has(c.id) && (st.entries[c.id] || []).length);
+  let y = M;
+  const need = h => { if (y + h > H - M - 16) { doc.addPage(); y = M; } };
+  const para = (t, size = 10, color = MUTED, style = 'normal') => {
+    doc.setFont('helvetica', style); doc.setFontSize(size); doc.setTextColor(...color);
+    const lines = doc.splitTextToSize(pdfText(t), W - 2 * M); need(lines.length * size * 1.35);
+    doc.text(lines, M, y + size); y += lines.length * size * 1.35 + 6; };
+  const heading = (t, eyebrow) => {
+    need(70); y += 12;
+    if (eyebrow) { doc.setFont('courier', 'normal'); doc.setFontSize(8); doc.setTextColor(...GOLD); doc.text(pdfText(eyebrow.toUpperCase()), M, y + 8); y += 13; }
+    doc.setFont('times', 'normal'); doc.setFontSize(17); doc.setTextColor(...INK); doc.text(pdfText(t), M, y + 14); y += 21;
+    doc.setDrawColor(...LINE); doc.setLineWidth(.6); doc.line(M, y, W - M, y); y += 9; };
+  const table = o => {
+    doc.autoTable({ startY:y, margin:{ left:M, right:M, bottom:M + 16 }, theme:'plain',
+      styles:{ font:'helvetica', fontSize:9, cellPadding:4, textColor:INK, lineColor:LINE, lineWidth:.5, overflow:'linebreak' },
+      headStyles:{ fillColor:SOFT, textColor:PEA, fontStyle:'bold' }, ...o });
+    y = doc.lastAutoTable.finalY + 10; };
+
+  // title
+  doc.setFont('times', 'normal'); doc.setFontSize(30); doc.setTextColor(...PEA); doc.text('Virasat', M, y + 26); y += 38;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...INK); doc.text('What my family should know', M, y + 12); y += 22;
+  para(`Prepared by ${st.preparedBy || 'me'} on ${DATEF.format(new Date())}.`, 9);
+  para('This document lists bank accounts, insurance, investments, property, loans and important contacts, so nothing is missed. It has no passwords, PINs or full account numbers. To claim, use the institutions, policy or folio numbers, nominees, contact people and document locations given here.', 10, INK);
+
+  const c = st.common || {}, ids = st.ids || {};
+  const shared = [['Original papers', c.docs], ['Scanned documents', c.link], ['Mobile numbers that get OTPs (keep these SIMs active)', (ids.mobiles || []).join(', ')], ['Linked email addresses', (ids.emails || []).join(', ')]].filter(r => r[1]);
+  if (shared.length) {
+    heading('Shared details');
+    para('Any record below that leaves these blank uses the ones here.', 8.5);
+    table({ body:shared.map(([a, b]) => [pdfText(a), pdfText(b)]), columnStyles:{ 0:{ cellWidth:180, textColor:MUTED, fontStyle:'bold' } } });
+  }
+
+  const T = totalsFor(st);
+  heading('Summary');
+  table({ head:[['Category', 'Entries', 'Amount', 'Payments / year']],
+    body:cats.map(cat => { const p = T.perCat[cat.id]; return [pdfText(cat.name), String(p.count), p.value ? pdfText(inr(p.value)) : '-', p.yearly ? pdfText(inr(p.yearly)) : '-']; }),
+    columnStyles:{ 1:{ halign:'right' }, 2:{ halign:'right' }, 3:{ halign:'right' } } });
+  table({ body:[['Total assets (approx.)', T.asset], ['Insurance cover', T.cover], ['Owed', T.debt], ['Regular payments per year', T.yearly]].map(([a, b]) => [a, pdfText(inr(b) || '₹0')]),
+    columnStyles:{ 0:{ fontStyle:'bold' }, 1:{ halign:'right' } }, tableWidth:300 });
+
+  const up = upcomingFor(st).filter(i => i.days >= 0 && i.days <= 365);
+  if (up.length) {
+    heading('Dates in the next 12 months');
+    table({ head:[['Date', 'What', ...(family ? ['Belongs to'] : []), 'Amount', 'Repeats']],
+      body:up.map(i => [DATEF.format(i.date), pdfText(`${i.label}: ${i.title}`), ...(family ? [pdfText(i.owner)] : []), isFinite(i.amount) ? pdfText(inr(i.amount)) : '', i.freq || 'Once']),
+      columnStyles:{ 0:{ cellWidth:70 } } });
+  }
+
+  for (const cat of cats) {
+    heading(cat.name, cat.g);
+    if (cat.claim) para('How your family claims this (draft): ' + cat.claim, 8.5, MUTED, 'italic');
+    for (const e of st.entries[cat.id]) {
+      const pairs = allFields(cat, family).filter(f => e[f.k] !== undefined && e[f.k] !== '').map(f => [pdfText(f.l), pdfText(fmtVal(f, e[f.k]))]);
+      const body = [];
+      for (let i = 0; i < pairs.length; i += 2) body.push([...pairs[i], ...(pairs[i + 1] || ['', ''])]);
+      need(30 + body.length * 20);
+      table({ head:[[{ content:pdfText(entryTitle(cat, e)), colSpan:4 }]], body,
+        columnStyles:{ 0:{ cellWidth:92, textColor:MUTED, fontStyle:'bold' }, 1:{ cellWidth:(W - 2 * M - 184) / 2 }, 2:{ cellWidth:92, textColor:MUTED, fontStyle:'bold' }, 3:{ cellWidth:(W - 2 * M - 184) / 2 } }, rowPageBreak:'avoid' });
+    }
+  }
+
+  const n = doc.getNumberOfPages();
+  for (let i = 1; i <= n; i++) {
+    doc.setPage(i); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...MUTED);
+    doc.text(pdfText(`Made with Virasat · gauravkhurana.com/virasat${st.preparedBy ? ' · ' + st.preparedBy : ''} · No passwords inside`), M, H - 22);
+    doc.text(`Page ${i} of ${n}`, W - M, H - 22, { align:'right' });
+  }
+  return doc;
+}
+function exportSheet(){
+  openSheet(`<h2 id="sheetTitle">Export my data</h2>
+  <p>Both files are made here in your browser and saved straight to your device.</p>
+  <div class="choices">
+    <button class="choice" data-act="exportXlsx"><span class="ck">Best for keeping</span><b>Excel file</b><span>Every detail, with filters and dropdowns. Import it back next year to update your list.</span></button>
+    <button class="choice" data-act="exportPdf"><span class="ck">Best for family</span><b>PDF document</b><span>Easy to read on any phone, and to print. Each record keeps all its details together. It can't be imported back.</span></button>
+  </div>
+  <div class="field" style="margin-top:1rem"><label for="pdfPass">Password to open the PDF (optional)</label><input class="name-in" id="pdfPass" autocomplete="off" placeholder="Leave blank for no password"><p class="hint">Basic protection. Share the password with family separately. The PDF shows English text only; Hindi and other scripts appear correctly in the Excel file.</p></div>
+  <div class="acts"><button class="btn" data-act="close">Cancel</button></div>`, { keepFocus:true });
+  const b = $('#sheet .choice'); if (b) b.focus();
+}
+function pdfDoneSheet(locked){
+  openSheet(`<h2 id="sheetTitle">Your PDF is ready</h2>
+  <ul><li><b>Share it</b> with family on WhatsApp, email or a shared Drive folder.</li>
+  <li>${locked ? '<b>Send the password separately</b>, not in the same message as the file.' : '<b>It has no password.</b> Export again with a password, or put it in a password-protected zip before you share it.'}</li>
+  <li><b>Keep the Excel file too.</b> The PDF is a snapshot. The Excel file is what you import next year to update.</li></ul>
+  <div class="acts"><button class="btn" data-act="exportXlsx">Also save the Excel file</button><button class="btn primary" data-act="close">Done</button></div>`);
+}
+
+/* ---------- unsaved changes ---------- */
+let pendingNext = null;
+function formChanged(){
+  const form = $('form[data-form="entry"]'); if (!form || !S.editing) return false;
+  const cur = readForm(form), ed = S.editing;
+  const orig = ed.id === 'new' ? {} : (list(ed.cat).find(x => x.id === ed.id) || {});
+  return Object.keys(cur).some(k => (cur[k] || '') !== String(orig[k] ?? ''));
+}
+function hideUnsaved(){ $('#unsaved').hidden = true; const f = $('form[data-form="entry"]'); if (f) f.classList.remove('attention'); }
+function guard(next){
+  if (!S.editing) return next();
+  if (!formChanged()) { S.editing = null; return next(); }
+  pendingNext = next;
+  const ed = S.editing, cat = CAT[ed.cat];
+  const what = ed.id === 'new' ? `your new ${cat.noun}` : `"${entryTitle(cat, list(ed.cat).find(x => x.id === ed.id) || {})}"`;
+  const u = $('#unsaved'); u.querySelector('[data-what]').textContent = what; u.hidden = false;
+  const f = $('form[data-form="entry"]'); if (f) f.classList.add('attention');
+  u.querySelector('button').focus({ preventScroll:true });
+}
+
+/* ---------- CSV / Excel import into one category ---------- */
+let CSVJOB = null;
+const norm = x => String(x ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+function parseCSV(text){
+  text = text.replace(/^﻿/, '');
+  const first = text.split(/\r?\n/, 1)[0] || '';
+  const delim = [',', ';', '\t'].map(d => [d, first.split(d).length]).sort((a, b) => b[1] - a[1])[0][0];
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === delim) { row.push(cell); cell = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += ch;
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+  return rows.map(r => r.map(c => c.trim())).filter(r => r.some(c => c !== ''));
+}
+function rawText(v){
+  if (v == null) return '';
+  if (v instanceof Date) return `${v.getUTCFullYear()}-${pad(v.getUTCMonth() + 1)}-${pad(v.getUTCDate())}`;
+  if (typeof v === 'object') { if (v.richText) return v.richText.map(r => r.text).join(''); if (v.hyperlink) return String(v.text ?? v.hyperlink); if ('result' in v) return rawText(v.result); if ('text' in v) return String(v.text); return ''; }
+  return String(v).trim();
+}
+async function readTable(file){
+  if (/\.xlsx$/i.test(file.name)) {
+    if (!needExcel()) return null;
+    const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await file.arrayBuffer());
+    const ws = wb.worksheets.find(w => w.state === 'visible' && w.rowCount > 1) || wb.worksheets[0]; if (!ws) return [];
+    const rows = [];
+    ws.eachRow({ includeEmpty:false }, r => { const vals = []; for (let c = 1; c <= r.cellCount; c++) vals.push(rawText(r.getCell(c).value)); if (vals.some(Boolean)) rows.push(vals); });
+    return rows;
+  }
+  return parseCSV(await file.text());
+}
+const csvFields = cat => allFields(cat, isFamily()).filter(f => f.t !== 'owner');
+const synonyms = (cat, f) => [...((cat.csv && cat.csv.syn && cat.csv.syn[f.k]) || []), f.l, f.k].map(norm).filter(Boolean);
+function autoMap(cat, header){
+  const map = {}, used = new Set(), H = header.map(norm);
+  for (const pass of [0, 1]) for (const f of csvFields(cat)) {
+    if (f.k in map) continue;
+    for (const syn of synonyms(cat, f)) {
+      const i = H.findIndex((h, j) => !used.has(j) && h && (pass === 0 ? h === syn : syn.length >= 5 && h.startsWith(syn)));
+      if (i >= 0) { map[f.k] = i; used.add(i); break; }
+    }
+  }
+  return map;
+}
+function findHeaderRow(cat, rows){
+  let best = 0, score = -1;
+  rows.slice(0, 20).forEach((r, i) => { const n = Object.keys(autoMap(cat, r)).length; if (n > score) { score = n; best = i; } });
+  return best;
+}
+async function startCsvImport(file){
+  const cat = CAT[S.view.slice(4)]; if (!cat) return;
+  let rows;
+  try { rows = await readTable(file); } catch (err) { console.error(err); toast('That file could not be read. Save it as CSV or .xlsx and try again.'); return; }
+  if (!rows) return;
+  if (rows.length < 2) { toast('No rows found in that file.'); return; }
+  const h = findHeaderRow(cat, rows);
+  const header = rows[h], body = rows.slice(h + 1).filter(r => !/^(grand )?total\b/i.test(r[0] || ''));
+  CSVJOB = { cat, file:file.name, header, body, map:autoMap(cat, header), fill:{} };
+  if (isFamily() && S.people.length === 1) CSVJOB.fill.owner = S.people[0];
+  csvSheet();
+}
+function fillFieldsFor(cat){ return [...(isFamily() ? [OWNER] : []), ...((cat.csv && cat.csv.fill) || []).map(k => cat.fields.find(f => f.k === k)).filter(Boolean)]; }
+function csvRowsMapped(){
+  const { cat, body, map, fill } = CSVJOB;
+  const fillKeys = new Set(fillFieldsFor(cat).map(f => f.k));
+  return body.map(r => {
+    const e = {};
+    for (const f of allFields(cat, isFamily())) {
+      let v = '';
+      if (map[f.k] != null) v = convertValue(r[map[f.k]] ?? '', f);
+      if (!v && fill[f.k]) v = fill[f.k];
+      if (v) e[f.k] = v;
+    }
+    return e;
+  }).filter(e => Object.keys(e).some(k => !fillKeys.has(k)));
+}
+function readFillInputs(){ document.querySelectorAll('#sheet [data-change="csvfill"]').forEach(i => { CSVJOB.fill[i.dataset.k] = i.value; }); }
+function rerenderCsv(){ const sh = $('#sheet'), top = sh.scrollTop; csvSheet(); sh.scrollTop = top; }
+function csvSheet(){
+  const { cat, file, header, map, fill } = CSVJOB;
+  const shown = csvFields(cat).filter(f => f.key || f.k in map);
+  const opts = sel => '<option value="">Skip</option>' + header.map((h, i) => `<option value="${i}" ${sel === i ? 'selected' : ''}>${esc(h || 'Column ' + (i + 1))}</option>`).join('');
+  const rows = csvRowsMapped();
+  const prevF = shown.filter(f => f.k in map).slice(0, 5);
+  const fillF = fillFieldsFor(cat);
+  openSheet(`<h2 id="sheetTitle">Import ${esc(plural(cat))}</h2>
+   <p>${esc(file)}: ${rows.length} ${rows.length === 1 ? 'row' : 'rows'} ready. Check which column fills each field. The file is read here in your browser and never uploaded.</p>
+   <h3>Match columns</h3>
+   <div class="map">${shown.map(f => `<label for="map-${f.k}">${esc(f.l)}</label><select id="map-${f.k}" data-change="csvmap" data-k="${f.k}">${opts(map[f.k])}</select>`).join('')}</div>
+   ${fillF.length ? `<h3>Same for every row</h3><div class="map">${fillF.map(f => f.t === 'owner'
+      ? `<label for="fill-owner">${esc(f.l)}</label><select id="fill-owner" data-change="csvfill" data-k="owner"><option value="">Leave blank</option>${S.people.map(p => `<option ${fill.owner === p ? 'selected' : ''}>${esc(p)}</option>`).join('')}</select>`
+      : `<label for="fill-${f.k}">${esc(f.l)}</label><input id="fill-${f.k}" data-change="csvfill" data-k="${f.k}" autocomplete="off" value="${esc(fill[f.k] || '')}" placeholder="${esc(f.ph || 'Optional')}">`).join('')}</div>` : ''}
+   <h3>Preview</h3>
+   <div class="tbl-wrap"><table><thead><tr>${prevF.map(f => `<th>${esc(f.l)}</th>`).join('')}</tr></thead><tbody>${rows.length && prevF.length ? rows.slice(0, 4).map(e => `<tr>${prevF.map(f => `<td>${esc(fmtVal(f, e[f.k]))}</td>`).join('')}</tr>`).join('') : '<tr><td>Nothing matched yet. Pick at least one column above.</td></tr>'}</tbody></table></div>
+   ${rows.length > 4 ? `<p class="footnote">and ${rows.length - 4} more</p>` : ''}
+   <div class="acts"><button class="btn" data-act="close">Cancel</button><button class="btn primary" data-act="csvGo" ${rows.length ? '' : 'disabled'}>Import ${rows.length} ${rows.length === 1 ? cat.noun : plural(cat)}</button></div>`, { wide:true, keepFocus:true });
+}
+
+/* ---------- help pages ---------- */
+const safeHref = u => /^https?:\/\//i.test(u || '') ? u : '';
+function commonBlock(){
+  const c = S.common, ids = S.ids, has = c.link || c.docs || ids.mobiles.length || ids.emails.length, href = safeHref(c.link);
+  return `<div class="tip" style="margin-bottom:1.25rem"><b>Shared</b><span>${has
+    ? `${c.docs ? `Originals: ${esc(c.docs)}. ` : ''}${c.link ? `Scans: ${href ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(c.link.length > 48 ? c.link.slice(0, 45) + '...' : c.link)}</a>` : esc(c.link)}. ` : ''}${ids.mobiles.length ? `OTP numbers: ${esc(ids.mobiles.join(', '))}. ` : ''}${ids.emails.length ? `Emails: ${esc(ids.emails.join(', '))}. ` : ''}Entries that leave these blank use them. `
+    : 'Keep every scan in one shared folder and set it once. Entries without their own link will point to it. '}<button class="btn small ghost" data-act="home">${has ? 'Change' : 'Set it up'}</button></span></div>`;
+}
+function renderFind(){
+  return `<div class="cat-h"><div class="eyebrow">Help</div><h2>Find my details</h2>
+    <p>Not sure what you own? These sources list most of it under your PAN, so you can fill Virasat in one sitting. Each category also has its own "Where to find these details" steps.</p></div>
+  <div class="sources">${MASTER.map(m => `<article class="src"><h3>${esc(m.t)}</h3><p class="where">${esc(m.w)}</p><p>${esc(m.d)}</p><p class="covers"><b>Finds:</b> ${esc(m.c)}</p>${m.u ? `<a href="${m.u}" target="_blank" rel="noopener noreferrer">Open ${esc(m.u.replace(/^https:\/\/(www\.)?/, ''))} &#8599;</a>` : ''}</article>`).join('')}</div>
+  <p class="note" style="margin-top:1rem">These links go to official sites and open in a new tab. Virasat sends nothing to them.</p>`;
+}
+function renderGlossary(){
+  const keys = Object.keys(GLOSS).sort((a, b) => a.localeCompare(b));
+  const html = `<div class="cat-h"><div class="eyebrow">Help</div><h2>Glossary</h2><p>Plain-English meanings of the terms banks, insurers and brokers use.</p></div>
+  <div class="filters"><input id="glossQ" class="name-in" style="max-width:22rem" placeholder="Search, e.g. CDSL or nominee" aria-label="Search the glossary" autocomplete="off" value="${esc(S.glossQ)}"></div>
+  <dl class="gloss">${keys.map(k => `<div data-g="${esc((k + ' ' + GLOSS[k]).toLowerCase())}"><dt>${esc(k)}</dt><dd>${esc(GLOSS[k])}</dd></div>`).join('')}</dl>
+  <p class="empty" id="glossNone" hidden><b>No match.</b>Try a shorter word.</p>`;
+  setTimeout(filterGloss, 0);
+  return html;
+}
+function filterGloss(){
+  const q = (S.glossQ || '').trim().toLowerCase(); let shown = 0;
+  document.querySelectorAll('.gloss > div').forEach(d => { const ok = !q || d.dataset.g.includes(q); d.hidden = !ok; if (ok) shown++; });
+  const none = $('#glossNone'); if (none) none.hidden = shown > 0;
+}
+
+function focusForm(){ const f = $('form[data-form="entry"]'); if (!f) return; f.scrollIntoView({ block:'nearest' }); const i = f.querySelector('input,select,textarea'); if (i) i.focus({ preventScroll:true }); }
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+  if (b.tagName === 'A') return;
+  const fn = ACTIONS[b.dataset.act]; if (!fn) return;
+  e.preventDefault(); fn(b);
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.matches('[data-cat]') && t.type === 'checkbox') { t.checked ? S.cats.add(t.dataset.cat) : S.cats.delete(t.dataset.cat);
+    const n = S.cats.size, s = $('[data-act="start"]'); if (s) { s.disabled = !n; s.textContent = `${totalEntries() ? 'Back to my list' : 'Start my list'} (${n} ${n === 1 ? 'category' : 'categories'})`; } }
+  if (t.dataset.change === 'upOwner') { S.upOwner = t.value; render(); }
+  if (t.dataset.change === 'upWindow') { S.upWindow = t.value; render(); }
+  if (t.id === 'csvIn' && t.files[0]) { startCsvImport(t.files[0]); return; }
+  if (t.dataset.change === 'csvmap' && CSVJOB) { if (t.value === '') delete CSVJOB.map[t.dataset.k]; else CSVJOB.map[t.dataset.k] = +t.value; rerenderCsv(); return; }
+  if (t.dataset.change === 'csvfill' && CSVJOB) { CSVJOB.fill[t.dataset.k] = t.value; rerenderCsv(); return; }
+  if (t.id === 'fileIn' && t.files[0]) { const f = t.files[0];
+    if (totalEntries() && !S.sample) { pendingFile = f; confirmSheet('Replace what is on screen?', `Loading ${f.name} replaces the ${totalEntries()} entries you have open now. Download your current list first if you need it.`, 'confirmLoad', 'Replace and load'); }
+    else importXlsx(f); }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'preparedBy') { S.preparedBy = t.value; return; }
+  if (t.id === 'commonLink') { S.common.link = t.value.trim(); return; }
+  if (t.id === 'commonDocs') { S.common.docs = t.value.trim(); return; }
+  if (t.id === 'glossQ') { S.glossQ = t.value; filterGloss(); return; }
+  const form = t.closest('form[data-form="entry"]'); if (!form) return;
+  const cat = CAT[form.dataset.cat]; const f = allFields(cat, isFamily()).find(x => x.k === t.name); if (!f) return;
+  if (f.t === 'money') { const wd = form.querySelector(`[data-words="${f.k}"]`), n = num(t.value); if (wd) wd.textContent = isFinite(n) && n >= 1000 ? inr(n) + ' · ' + inWords(n) : ''; }
+  const w = safetyWarning(f, t.value), p = form.querySelector(`[data-warn="${f.k}"]`);
+  if (p) { p.textContent = w; p.hidden = !w; }
+});
+document.addEventListener('submit', e => {
+  const form = e.target; e.preventDefault();
+  if (form.dataset.form === 'entry') saveEntry(form);
+  if (form.dataset.form === 'id') { const L = form.dataset.list, i = form.querySelector('input'), v = i.value.trim();
+    if (v && !S.ids[L].includes(v)) S.ids[L].push(v); render(); const n = $(`form[data-list="${L}"] input`); if (n) n.focus(); }
+  if (form.dataset.form === 'person') { const i = form.querySelector('#personIn'); const v = i.value.trim();
+    if (v && !S.people.includes(v)) S.people.push(v); render(); const n = $('#personIn'); if (n) n.focus(); }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#overlay').hidden) closeSheet(); });
+$('#overlay').addEventListener('click', e => { if (e.target.id === 'overlay') closeSheet(); });
+window.addEventListener('beforeunload', e => { if (S.dirty && !S.sample) { e.preventDefault(); e.returnValue = ''; } });
+
+render();
+</script>
