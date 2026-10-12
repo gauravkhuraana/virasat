@@ -114,7 +114,12 @@ a.btn{text-decoration:none}
 .tile .td{font-size:.83rem;color:var(--muted);line-height:1.35}
 .tile .tc{position:absolute;top:.55rem;right:.6rem;font-size:.72rem;color:var(--peacock);font-weight:700}
 .tile:has(input:checked){border-color:var(--peacock);background:color-mix(in srgb,var(--peacock-soft) 55%,var(--surface))}
-.go{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;padding-block:1.75rem}
+.go{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:center;padding-block:1.75rem}
+.step.pick{grid-template-columns:1fr;gap:1.25rem}
+.step.pick .step-h{text-align:center;max-width:46rem;margin-inline:auto}
+.step.pick .step-h h2{font-size:clamp(1.6rem,3vw,2.1rem)}
+.step.pick .step-h p{font-size:1rem}
+.pick-acts{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;margin-top:.9rem}
 .go .btn.primary{font-size:1rem;padding:.75em 1.3em}
 .excel-alt{margin-top:.5rem;padding:1rem 1.1rem;border:1px dashed var(--line);border-radius:var(--r);display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;align-items:center;font-size:.92rem}
 .excel-alt p{flex:1 1 320px;color:var(--muted)}
@@ -321,7 +326,7 @@ details.find p{font-size:.8rem;color:var(--ink);background:var(--surface-2);bord
 <header class="top">
   <div class="top-in">
     <div class="brand-wrap"><button class="brand" data-act="home" aria-label="Virasat home"><b>Virasat</b><span lang="hi">विरासत</span></button><a class="byline" href="https://gauravkhurana.com" target="_blank" rel="noopener noreferrer">by gauravkhurana.com</a></div>
-    <button class="privacy-pill" data-act="privacy" aria-label="Nothing leaves this browser. See how."><i></i>Nothing leaves this browser<span class="how">How?</span></button>
+    <button class="privacy-pill" data-act="privacy" aria-label="Only you can see what you type. See how."><i></i>Only you can see what you type<span class="how">How?</span></button>
     <div class="top-actions">
       <button class="btn" data-act="sample" id="sampleBtn">Explore with sample data</button>
       <button class="btn primary" data-act="export" id="exportBtn">Export my data</button>
@@ -334,7 +339,7 @@ details.find p{font-size:.8rem;color:var(--ink);background:var(--surface-2);bord
 <div class="unsaved" id="unsaved" role="alertdialog" aria-labelledby="unsavedMsg" hidden><div id="unsavedMsg"><b>Unsaved changes</b> in <span data-what></span>. Save them before you move on?</div><div class="ua"><button class="btn primary small" data-act="uSave">Save and continue</button><button class="btn small" data-act="uDiscard">Discard changes</button><button class="btn small ghost" data-act="uStay">Keep editing</button></div></div>
 <main class="wrap" id="main"></main>
 <footer>
-  <span>Virasat keeps nothing. Close this tab and everything you typed is gone, so export your data before you leave.</span>
+  <span>Nothing is saved on this site. Before you close this page, tap Export my data to save your file.</span>
   <span>Claim notes are a draft. Check with the institution before relying on them.</span>
   <div class="foot-acts"><button class="btn small" data-act="feedback">Report a bug or idea</button><button class="btn small" data-act="support">Support Virasat</button></div>
   <a class="site" href="https://gauravkhurana.com" target="_blank" rel="noopener noreferrer">gauravkhurana.com</a>
@@ -1410,7 +1415,7 @@ function allFields(cat, family){
 }
 
 /* ---------- state ---------- */
-const S = { mode:'me', people:[], preparedBy:'', common:{ link:'', docs:'' }, ids:{ mobiles:[], emails:[] }, glossQ:'', cats:new Set(COMMON_PICKS), entries:{}, view:'setup', editing:null, sample:false, dirty:false, upOwner:'', upWindow:'365' };
+const S = { mode:'me', people:[], preparedBy:'', common:{ link:'', docs:'' }, ids:{ mobiles:[], emails:[] }, glossQ:'', cats:new Set(), entries:{}, view:'setup', editing:null, sample:false, dirty:false, upOwner:'', upWindow:'365' };
 const KIND_LABEL = { asset:'Value', cover:'Cover', debt:'Owed', none:'Detail' };
 const isFamily = () => S.mode === 'family';
 const list = id => (S.entries[id] ||= []);
@@ -1533,7 +1538,7 @@ function idList(list, label, hint, ph){
 }
 function renderShared(){
   return `<div class="cat-h"><div class="eyebrow">Optional</div><h2>Family & shared details</h2>
-    <p>All of this is optional and stays in this browser like everything else. It makes the file more useful for your family.</p></div>
+    <p>All of this is optional and stays on your phone or computer like everything else. It makes the file more useful for your family.</p></div>
   <section class="step">
     <div class="step-h"><div class="k">People</div><h2>Who is this list for?</h2><p>For a family, each entry gets a "Belongs to" field you can filter by.</p></div>
     <div>
@@ -1559,6 +1564,7 @@ function renderShared(){
   </section>
   <div class="go"><button class="btn primary" data-act="view" data-v="summary">Done</button></div>`;
 }
+const startLabel = (n, hasData) => n ? `${hasData ? 'Back to my list' : 'Start my list'} (${n} ${n === 1 ? 'category' : 'categories'})` : 'Tick what you have to start';
 function renderSetup(){
   const counts = id => list(id).length;
   const groups = GROUPS.map(g => {
@@ -1576,19 +1582,18 @@ function renderSetup(){
       <p class="lede">List your LIC policies, bank accounts, mutual funds, property and loans in one place. Export it as an Excel file or PDF your family can open when they need it. Every field is optional.</p>
     </div>
     <div class="proof">
-      <div><span class="dot">1</span><span><b>No sign-up, no server</b>What you type stays in this browser tab.</span></div>
-      <div><span class="dot">2</span><span><b>Nothing is saved</b>Close the tab and it is gone. Your Excel file is your copy.</span></div>
-      <div><span class="dot">3</span><span><b>Works offline</b>Turn off your internet after this page loads. Everything still works.</span></div>
+      <div><span class="dot">1</span><span><b>No login, no sign-up</b>Just open and start. We don't ask who you are.</span></div>
+      <div><span class="dot">2</span><span><b>We can't see your details</b>What you type stays on your own phone or computer. It is never sent to us or anyone else.</span></div>
+      <div><span class="dot">3</span><span><b>Nothing is saved on this site</b>Close the page and it's all gone. Save your file to keep a copy.</span></div>
     </div>
   </section>
-  <section class="step">
-    <div class="step-h"><div class="k">Start here</div><h2>What do you have?</h2><p>Only these tabs appear in the app and in your Excel. You can change this later.</p>
-      <button class="btn small ghost" style="margin-top:.5rem;padding-left:0" data-act="view" data-v="find">Not sure what you own? Find it &rarr;</button>
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.8rem"><button class="btn small" data-act="pick" data-p="common">Common picks</button><button class="btn small" data-act="pick" data-p="all">All</button><button class="btn small ghost" data-act="pick" data-p="none">None</button></div></div>
+  <section class="step pick">
+    <div class="step-h"><div class="k">Start here</div><h2>What do you have?</h2><p>Tick everything you or your family has. Only these sections will appear, and you can change them later.</p>
+      <div class="pick-acts"><button class="btn small" data-act="pick" data-p="common">Tick the common ones</button><button class="btn small" data-act="pick" data-p="all">Tick all</button><button class="btn small ghost" data-act="pick" data-p="none">Clear</button><button class="btn small ghost" data-act="view" data-v="find">Not sure what you own? &rarr;</button></div></div>
     <div>${groups}</div>
   </section>
   <div class="go">
-    <button class="btn primary" data-act="start" ${n ? '' : 'disabled'}>${hasData ? 'Back to my list' : 'Start my list'} (${n} ${n === 1 ? 'category' : 'categories'})</button>
+    <button class="btn primary" data-act="start" ${n ? '' : 'disabled'}>${startLabel(n, hasData)}</button>
     ${hasData ? '' : '<button class="btn ghost" data-act="sample">Just looking? Explore with sample data</button>'}
   </div>
   <div class="excel-alt">
@@ -1851,7 +1856,7 @@ async function buildWorkbook(st){
     ['Keep it current', 'h'],
     ['Update it once a year. Open Virasat in a browser, choose "Import my data", make changes and export again. You can also edit this file directly.', ''],
     ['', ''],
-    ['Made with Virasat by gauravkhurana.com (gauravkhurana.com/virasat). This file was created in the browser and nothing was sent to any server.', 'muted'],
+    ['Made with Virasat by gauravkhurana.com (gauravkhurana.com/virasat). This file was made on your own phone or computer. Nothing was sent to anyone.', 'muted'],
   ];
   lines.forEach(([t, k], i) => { const c = rm.getCell(i + 1, 1); c.value = k === 'link' ? { text:`All scanned documents: ${t}`, hyperlink:t } : t; c.alignment = { wrapText:true, vertical:'top' };
     if (k === 'link') c.font = { bold:true, underline:true, color:{ argb:XL.head } };
@@ -2081,18 +2086,17 @@ function openSheet(html, opts = {}){ const sh = $('#sheet'); sh.className = 'she
 function closeSheet(){ $('#overlay').hidden = true; $('#sheet').innerHTML = ''; }
 const NEVER = '<div class="never"><span>Passwords</span><span>PINs / MPINs</span><span>OTPs</span><span>CVV</span><span>Full card numbers</span><span>Full Aadhaar</span><span>Seed phrases</span><span>Net-banking IDs</span></div>';
 function privacySheet(){
-  openSheet(`<h2 id="sheetTitle">Your data stays here</h2>
-  <p>Virasat is a single web page. There is no account, no database and no server that receives what you type.</p>
-  <h3>What happens to your entries</h3>
-  <ul><li><b>Kept in this tab only.</b> Entries live in the page's memory. Close or refresh the tab and they are gone.</li>
-  <li><b>Never sent anywhere.</b> The page makes no network requests with your data. No analytics, no cookies, no ads.</li>
-  <li><b>Your Excel is your copy.</b> It is created inside your browser and saved straight to your device.</li></ul>
-  <h3>Check it yourself</h3>
-  <ul><li>Load the page, then switch off Wi-Fi or mobile data. Add entries and download the Excel. It all still works.</li>
-  <li>The page's security settings block it from sending data to any website, so it cannot leak anything even by mistake.</li>
-  <li>The only official address is <b>gauravkhurana.com/virasat</b>. Don't enter your details into copies hosted anywhere else.</li></ul>
-  <h3>Never store these, here or anywhere</h3>${NEVER}
-  <p>Your family doesn't need logins to claim. They need to know what exists, who the nominee is, and where the papers are.</p>
+  openSheet(`<h2 id="sheetTitle">Only you can see what you type</h2>
+  <ul><li><b>No account, no login.</b> We don't know who you are.</li>
+  <li><b>It stays on your phone or computer.</b> Your details are never sent to us or to anyone else. We have nowhere to keep them, even if we wanted to.</li>
+  <li><b>Close the page and it's gone.</b> To keep your list, tap <b>Export my data</b> and save the file. That file is yours.</li>
+  <li><b>No ads, no tracking.</b></li></ul>
+  <h3>Want to check?</h3>
+  <p>After this page opens, turn off your internet (Wi-Fi and mobile data). Everything still works, even saving your file. That's because nothing needs to be sent anywhere.</p>
+  <h3>Only use the real site</h3>
+  <p>The only official address is <b>gauravkhurana.com/virasat</b>. Don't type your details into copies on other websites.</p>
+  <h3>Never write these down, here or anywhere</h3>${NEVER}
+  <p>Your family doesn't need your passwords to claim money. They need to know what exists, who the nominee is, and where the papers are.</p>
   <div class="acts"><button class="btn primary" data-act="close">Got it</button></div>`);
 }
 function lockSheet(){
@@ -2169,7 +2173,7 @@ const ACTIONS = {
   async template(){ await exportXlsx({ mode:'family', people:S.people.length ? S.people : ['Self', 'Spouse'], preparedBy:'', cats:new Set(CATS.map(c => c.id)), entries:{} }, 'Virasat-blank-template.xlsx'); },
   async sampleXlsx(){ await exportXlsx(sampleState(), 'Virasat-sample-made-up-data.xlsx'); },
   sample(){ const s = sampleState(); Object.assign(S, { mode:s.mode, people:s.people, preparedBy:s.preparedBy, common:s.common, ids:s.ids, cats:s.cats, entries:s.entries, sample:true, dirty:false, view:'summary', editing:null }); render(); window.scrollTo(0, 0); },
-  fresh(){ Object.assign(S, { mode:'me', people:[], preparedBy:'', common:{ link:'', docs:'' }, ids:{ mobiles:[], emails:[] }, cats:new Set(COMMON_PICKS), entries:{}, sample:false, dirty:false, view:'setup', editing:null }); render(); window.scrollTo(0, 0); },
+  fresh(){ Object.assign(S, { mode:'me', people:[], preparedBy:'', common:{ link:'', docs:'' }, ids:{ mobiles:[], emails:[] }, cats:new Set(), entries:{}, sample:false, dirty:false, view:'setup', editing:null }); render(); window.scrollTo(0, 0); },
   async ics(){ const items = upcomingItems().filter(i => i.days >= 0 || i.recurring);
     if (!items.length) { toast('No upcoming dates to export yet.'); return; }
     if (!OFFLINE && window.claude) { openSheet(`<h2 id="sheetTitle">Calendar file</h2><p>This preview can't save .ics files. Use "Add to Google Calendar" on each date instead. On gauravkhurana.com/virasat this button saves all ${items.length} dates as one calendar file.</p><div class="acts"><button class="btn primary" data-act="close">Close</button></div>`); return; }
@@ -2278,7 +2282,7 @@ function buildPdf(st, password){
 }
 function exportSheet(){
   openSheet(`<h2 id="sheetTitle">Export my data</h2>
-  <p>Both files are made here in your browser and saved straight to your device.</p>
+  <p>Your file is made right here on your phone or computer and saved to it. Nothing is sent to us.</p>
   <details class="findbox" style="margin-top:.8rem" ${S.preparedBy || S.common.docs || S.common.link ? '' : 'open'}><summary>Before you export: details for your family (optional)</summary>
     <div class="grid" style="margin-top:.7rem">
       <div class="field"><label for="exName">Your name (shown on the file)</label><input class="name-in" id="exName" autocomplete="off" value="${esc(S.preparedBy)}"></div>
@@ -2478,7 +2482,7 @@ function csvSheet(){
   const prevF = shown.filter(f => f.k in map).slice(0, 5);
   const fillF = fillFieldsFor(cat);
   openSheet(`<h2 id="sheetTitle">Import ${esc(plural(cat))}</h2>
-   <p>${esc(file)}: ${rows.length} ${rows.length === 1 ? 'row' : 'rows'} ready. Check which column fills each field. The file is read here in your browser and never uploaded.</p>
+   <p>${esc(file)}: ${rows.length} ${rows.length === 1 ? 'row' : 'rows'} ready. Check which column fills each field. Your file is read right here and never uploaded.</p>
    <h3>Match columns</h3>
    <div class="map">${shown.map(f => `<label for="map-${f.k}">${esc(f.l)}</label><select id="map-${f.k}" data-change="csvmap" data-k="${f.k}">${opts(map[f.k])}</select>`).join('')}</div>
    ${fillF.length ? `<h3>Same for every row</h3><div class="map">${fillF.map(f => f.t === 'owner'
@@ -2532,7 +2536,7 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => {
   const t = e.target;
   if (t.matches('[data-cat]') && t.type === 'checkbox') { t.checked ? S.cats.add(t.dataset.cat) : S.cats.delete(t.dataset.cat);
-    const n = S.cats.size, s = $('[data-act="start"]'); if (s) { s.disabled = !n; s.textContent = `${totalEntries() ? 'Back to my list' : 'Start my list'} (${n} ${n === 1 ? 'category' : 'categories'})`; } }
+    const n = S.cats.size, s = $('[data-act="start"]'); if (s) { s.disabled = !n; s.textContent = startLabel(n, totalEntries() > 0); } }
   if (t.dataset.change === 'upOwner') { S.upOwner = t.value; render(); }
   if (t.dataset.change === 'upWindow') { S.upWindow = t.value; render(); }
   if (t.matches('[data-fb]')) { updateFb(); return; }

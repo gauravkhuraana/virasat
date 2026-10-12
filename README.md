@@ -57,7 +57,7 @@ Because `gauravkhurana.com` is the custom domain of the user site (`gauravkhuraa
 
 One-time setup: **Settings > Pages > Build and deployment > Source: GitHub Actions.**
 
-Keep analytics and tracking scripts off this page, or the "nothing leaves this browser" promise is no longer true.
+Keep analytics and tracking scripts off this page, or the "only you can see what you type" promise is no longer true.
 
 ## Content status
 
