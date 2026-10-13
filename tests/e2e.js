@@ -183,6 +183,18 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   });
   console.log('round-trip diff:', JSON.stringify(diff, null, 1));
 
+  // emotional question band leads straight into a form
+  const qp = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  qp.on('pageerror', e => errors.push('qp pageerror: ' + e.message));
+  await qp.goto(url);
+  const q1 = await qp.textContent('#askQ');
+  await qp.click('.ask-dot[data-i="1"]'); await qp.waitForTimeout(400);
+  const q2 = await qp.textContent('#askQ');
+  await qp.click('#askGo');
+  const askOk = q1 !== q2 && await qp.isVisible('form[data-form="entry"]') && await qp.evaluate(() => S.cats.has('mf') && S.view === 'cat:mf');
+  console.log('question band ok:', askOk);
+  await qp.close();
+
   // mobile
   const m = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
   m.on('pageerror', e => errors.push('m pageerror: ' + e.message));
@@ -211,6 +223,7 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   if (errors.length) failures.push('console errors: ' + errors.join(' | '));
   if (requests.length) failures.push('page made outgoing requests: ' + requests.join(', '));
   if (!fbOk) failures.push('feedback link is wrong');
+  if (!askOk) failures.push('question band broken');
   if (!howOk) failures.push('3-step strip or open-code link missing');
   if (!nomOk) failures.push('nominee flow broken');
   if (!saveOk) failures.push('save progress broken');

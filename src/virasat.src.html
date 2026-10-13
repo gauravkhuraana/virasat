@@ -257,6 +257,18 @@ footer .site{flex-basis:100%;text-align:center;margin-top:1rem;font-weight:600;c
 footer .site:hover{text-decoration:underline}
 
 /* v7: steps, save bar, nominees */
+.ask{margin-block:1.75rem 0;background:var(--peacock);color:var(--peacock-ink);border-radius:16px;padding:1.6rem clamp(1.1rem,4vw,2.4rem);display:grid;gap:.9rem;text-align:center;justify-items:center}
+.ask-k{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--marigold-soft)}
+.ask-q{font-family:var(--f-display);font-size:clamp(1.45rem,3.6vw,2.3rem);line-height:1.2;max-width:28ch;min-height:2.4em;display:grid;place-items:center;transition:opacity .28s ease,transform .28s ease;text-wrap:balance}
+.ask-q.out{opacity:0;transform:translateY(6px)}
+.ask-a{display:flex;flex-wrap:wrap;gap:.9rem;align-items:center;justify-content:center}
+.ask-go{background:var(--marigold);border-color:var(--marigold);color:#1d1400;font-size:1rem;padding:.65em 1.2em}
+.ask-go:hover{filter:brightness(1.06);border-color:var(--marigold)}
+.ask-dots{display:flex;gap:.4rem}
+.ask-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid currentColor;background:transparent;padding:0;opacity:.7}
+.ask-dot[aria-current="true"]{background:currentColor;opacity:1}
+.ask-note{font-size:.88rem;opacity:.85}
+@media (prefers-reduced-motion:reduce){.ask-q{transition:none}}
 .how3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.25rem;padding-block:1.75rem;border-bottom:1px solid var(--line)}
 .how3-i{display:flex;gap:.8rem;align-items:flex-start}
 .how3-n{flex:none;width:38px;height:38px;border-radius:50%;background:var(--peacock);color:var(--peacock-ink);display:grid;place-items:center;font-family:var(--f-display);font-size:1.2rem}
@@ -1122,8 +1134,8 @@ function render(){
   $('#saveBtn').hidden = S.sample || totalEntries() === 0;
   $('#saveFloat').hidden = !(S.dirty && !S.sample && totalEntries() > 0 && S.view !== 'setup');
   document.body.classList.toggle('has-float', !$('#saveFloat').hidden);
-  if (S.view === 'setup') m.innerHTML = renderSetup();
-  else m.innerHTML = `<div class="ws"><nav class="nav" aria-label="Categories">${renderNav()}</nav><section id="content" style="min-width:0">${saveBar()}${renderContent()}</section></div>`;
+  if (S.view === 'setup') { m.innerHTML = renderSetup(); startAsk(); }
+  else { stopAsk(); m.innerHTML = `<div class="ws"><nav class="nav" aria-label="Categories">${renderNav()}</nav><section id="content" style="min-width:0">${saveBar()}${renderContent()}</section></div>`; }
   const cur = m.querySelector('.nav [aria-current="page"]');
   if (cur && window.matchMedia('(max-width:860px)').matches) cur.scrollIntoView({ block:'nearest', inline:'center' });
 }
@@ -1162,6 +1174,32 @@ function renderShared(){
   <div class="go"><button class="btn primary" data-act="view" data-v="summary">Done</button></div>`;
 }
 const startLabel = (n, hasData) => n ? `${hasData ? 'Proceed with filling' : 'Start my list'} (${n} ${n === 1 ? 'category' : 'categories'})` : 'Tick what you have to start';
+const ASKS = [
+  { q:'Will your family get anything if you are gone today?', a:'List my insurance', cats:['life','term','health'] },
+  { q:'Does your family know where all your money is invested?', a:'List my investments', cats:['mf','demat','deposits'] },
+  { q:'Does anyone at home know which bank accounts and lockers you have?', a:'List my bank accounts', cats:['bank','locker'] },
+  { q:'Is a nominee registered on every account and policy you own?', a:'Check my nominees', cats:['bank','life'] },
+  { q:'Would your family know about the group insurance and gratuity from your job?', a:'List my employer benefits', cats:['employer'] },
+  { q:'Old PF, a forgotten FD, shares from years ago. Would anyone find them?', a:'List my PF and old savings', cats:['retirement','deposits'] },
+  { q:'Would your family know which loans to repay and which cards to close?', a:'List my loans and cards', cats:['loans','cards'] },
+];
+let askIdx = 0, askTimer = null, askPaused = false;
+function askShow(i){
+  const q = $('#askQ'), go = $('#askGo'); if (!q) { stopAsk(); return; }
+  askIdx = (i + ASKS.length) % ASKS.length;
+  const apply = () => { q.textContent = ASKS[askIdx].q; go.innerHTML = esc(ASKS[askIdx].a) + ' &rarr;';
+    document.querySelectorAll('.ask-dot').forEach((d, j) => d.setAttribute('aria-current', String(j === askIdx))); q.classList.remove('out'); };
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { apply(); return; }
+  q.classList.add('out'); setTimeout(apply, 280);
+}
+function stopAsk(){ clearInterval(askTimer); askTimer = null; }
+function startAsk(){
+  stopAsk();
+  const box = $('.ask'); if (!box || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  box.addEventListener('mouseenter', () => { askPaused = true; }); box.addEventListener('mouseleave', () => { askPaused = false; });
+  box.addEventListener('focusin', () => { askPaused = true; }); box.addEventListener('focusout', () => { askPaused = false; });
+  askTimer = setInterval(() => { if (!askPaused && !document.hidden) askShow(askIdx + 1); }, 4200);
+}
 function renderSetup(){
   const counts = id => list(id).length;
   const groups = GROUPS.map(g => {
@@ -1184,6 +1222,13 @@ function renderSetup(){
       <div><span class="dot">3</span><span><b>Nothing is saved on this site</b>Close the page and it's all gone. Save your file to keep a copy.</span></div>
       <div><span class="dot">4</span><span><b>Open code</b>Anyone can read the code on <a href="https://github.com/gauravkhuraana/virasat" target="_blank" rel="noopener noreferrer">GitHub</a> and check it does what we say.</span></div>
     </div>
+  </section>
+  <section class="ask" aria-label="Ask yourself">
+    <div class="ask-k">Ask yourself</div>
+    <p class="ask-q" id="askQ">${esc(ASKS[askIdx].q)}</p>
+    <div class="ask-a"><button class="btn ask-go" data-act="askGo" id="askGo">${esc(ASKS[askIdx].a)} &rarr;</button>
+      <span class="ask-dots" role="group" aria-label="Choose a question">${ASKS.map((x, i) => `<button class="ask-dot" data-act="askPick" data-i="${i}" aria-label="Question ${i + 1}" aria-current="${i === askIdx}"></button>`).join('')}</span></div>
+    <p class="ask-note">Most families find out too late. Your first entry takes about two minutes.</p>
   </section>
   <section class="how3" aria-label="How it works">
     <div class="how3-i"><span class="how3-n">1</span><div><b>Pick what you have</b><p>Bank accounts, LIC, mutual funds, property and more.</p></div></div>
@@ -1878,6 +1923,9 @@ const ACTIONS = {
     if (ok) { markSaved(name, false); render(); lockSheet(); } },
   async template(){ await exportXlsx({ mode:'family', people:S.people.length ? S.people : ['Self', 'Spouse'], preparedBy:'', cats:new Set(CATS.map(c => c.id)), entries:{} }, 'Virasat-blank-template.xlsx'); },
   async sampleXlsx(){ await exportXlsx(sampleState(), 'Virasat-sample-made-up-data.xlsx'); },
+  askPick(b){ askPaused = true; askShow(+b.dataset.i); },
+  askGo(){ const a = ASKS[askIdx]; stopAsk(); a.cats.forEach(c => S.cats.add(c)); S.view = 'cat:' + a.cats[0]; S.editing = { cat:a.cats[0], id:'new', draft:{} };
+    render(); window.scrollTo(0, 0); focusForm(); toast('Start with one entry. Every field is optional.'); },
   sample(){ const s = sampleState(); Object.assign(S, { mode:s.mode, people:s.people, preparedBy:s.preparedBy, common:s.common, ids:s.ids, cats:s.cats, entries:s.entries, sample:true, dirty:false, view:'summary', editing:null }); render(); window.scrollTo(0, 0); },
   fresh(){ Object.assign(S, { mode:'me', people:[], preparedBy:'', common:{ link:'', docs:'' }, ids:{ mobiles:[], emails:[] }, cats:new Set(), entries:{}, sample:false, dirty:false, view:'setup', editing:null }); render(); window.scrollTo(0, 0); },
   async ics(){ const items = upcomingItems().filter(i => i.days >= 0 || i.recurring);
