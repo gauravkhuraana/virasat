@@ -230,9 +230,16 @@ tr.clickable:hover td{background:var(--surface-2)}
 .never{display:flex;flex-wrap:wrap;gap:.4rem;margin:.4rem 0}
 .never span{background:var(--danger-soft);color:var(--danger);border-radius:6px;padding:.15rem .55rem;font-size:.85rem;font-weight:600}
 
+.savefloat{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:.7rem;background:var(--surface);border:1.5px solid var(--marigold);border-radius:999px;padding:.35rem .4rem .35rem 1rem;box-shadow:0 8px 24px rgba(0,0,0,.18);font-size:.88rem;font-weight:600;color:var(--ink);white-space:nowrap}
+body.has-float main{padding-bottom:5rem}
+body.has-float .toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);padding:.6rem 1rem;border-radius:8px;font-weight:600;font-size:.9rem;opacity:0;pointer-events:none;transition:.2s;z-index:60;max-width:calc(100% - 32px)}
 .toast.show{opacity:1;transform:translateX(-50%)}
 footer{max-width:1200px;margin:0 auto;padding:1.5rem 16px 2.5rem;color:var(--muted);font-size:.82rem;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:.5rem 1.5rem}
+footer .f-bug{background:var(--marigold-soft);border-color:var(--marigold);color:var(--marigold)}
+footer .f-sup{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+footer .f-code{background:var(--peacock-soft);border-color:var(--peacock);color:var(--peacock)}
+footer .f-bug:hover,footer .f-sup:hover,footer .f-code:hover{filter:brightness(.97);border-width:1px}
 footer .foot-acts{flex-basis:100%;display:flex;justify-content:center;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
 .fb{display:grid;gap:.8rem;margin-top:.6rem}
 .fb .warn{margin:0}
@@ -261,6 +268,7 @@ footer .site:hover{text-decoration:underline}
 .nom-block{border:1.5px solid var(--marigold);background:color-mix(in srgb,var(--marigold-soft) 55%,var(--surface));border-radius:10px;padding:.85rem 1rem;display:grid;gap:.8rem}
 .nom-h h4{font-family:var(--f-display);font-weight:400;font-size:1.2rem;margin:0}
 .nom-h p{font-size:.85rem;color:var(--muted);margin-top:.2rem;max-width:75ch}
+.nom-h .nom-legal{color:var(--ink);background:var(--surface);border-radius:6px;padding:.4rem .6rem;margin-top:.4rem}
 .nom-row{display:grid;gap:.4rem}
 .nom-row-h{display:none;align-items:center;gap:.8rem;font-size:.85rem}
 .nom-block.multi .nom-row-h{display:flex}
@@ -358,12 +366,13 @@ details.find p{font-size:.8rem;color:var(--ink);background:var(--surface-2);bord
 <div class="unsaved" id="unsaved" role="alertdialog" aria-labelledby="unsavedMsg" hidden><div id="unsavedMsg"><b>Unsaved changes</b> in <span data-what></span>. Save them before you move on?</div><div class="ua"><button class="btn primary small" data-act="uSave">Save and continue</button><button class="btn small" data-act="uDiscard">Discard changes</button><button class="btn small ghost" data-act="uStay">Keep editing</button></div></div>
 <main class="wrap" id="main"></main>
 <footer>
-  <span>Nothing is saved on this site. Before you close this page, tap Export my data to save your file.</span>
+  <span>Nothing is saved on this site. Before you close this page, tap Save progress to keep your file. You can import it any day to carry on.</span>
   <span>Claim notes are a draft. Check with the institution before relying on them.</span>
-  <div class="foot-acts"><button class="btn small" data-act="feedback">Report a bug or idea</button><button class="btn small" data-act="support">Support Virasat</button><a class="btn small" href="https://github.com/gauravkhuraana/virasat" target="_blank" rel="noopener noreferrer">Open code on GitHub</a></div>
+  <div class="foot-acts"><button class="btn small f-bug" data-act="feedback">Report a bug or idea</button><button class="btn small f-sup" data-act="support">Support Virasat</button><a class="btn small f-code" href="https://github.com/gauravkhuraana/virasat" target="_blank" rel="noopener noreferrer">Open code on GitHub</a></div>
   <a class="site" href="https://gauravkhurana.com" target="_blank" rel="noopener noreferrer">gauravkhurana.com</a>
 </footer>
 <div class="overlay" id="overlay" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div></div>
+<div class="savefloat" id="saveFloat" hidden><span>Not saved yet</span><button class="btn small primary" data-act="saveProgress">Save progress</button></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <!--@LIBS-->
@@ -1111,6 +1120,8 @@ function render(){
   $('#exportBtn').hidden = S.view === 'setup' && totalEntries() === 0;
   $('#sampleBtn').hidden = S.sample || totalEntries() > 0;
   $('#saveBtn').hidden = S.sample || totalEntries() === 0;
+  $('#saveFloat').hidden = !(S.dirty && !S.sample && totalEntries() > 0 && S.view !== 'setup');
+  document.body.classList.toggle('has-float', !$('#saveFloat').hidden);
   if (S.view === 'setup') m.innerHTML = renderSetup();
   else m.innerHTML = `<div class="ws"><nav class="nav" aria-label="Categories">${renderNav()}</nav><section id="content" style="min-width:0">${saveBar()}${renderContent()}</section></div>`;
   const cur = m.querySelector('.nav [aria-current="page"]');
@@ -1268,7 +1279,7 @@ function nomineeBlock(e){
       <div class="nom-grid">${NOMINEE_FIELDS.filter(f => f.nom === i).map(f => fieldInput(f, e, L[f.part])).join('')}</div></div>`;
   }
   return `<section class="nom-block ${shown > 1 ? 'multi' : ''}" data-nomblock>
-    <div class="nom-h"><h4>Nominee</h4><p>The most important detail on this page. With a nominee, your family can usually claim with a death certificate and a form. Without one, they may need a legal heir or succession certificate, which can take months. Add the date of birth too, so your family can check it matches the record.</p></div>
+    <div class="nom-h"><h4>Nominee</h4><p class="nom-legal"><b>Only fill this if the nominee is registered on the actual account or policy.</b> Writing a name here doesn't make anyone a nominee. It only tells your family who is registered, so they can claim. Not registered yet? See "Add or update the nominee" above.</p><p>The most important detail on this page. With a nominee, your family can usually claim with a death certificate and a form. Without one, they may need a legal heir or succession certificate, which can take months. Add the date of birth too, so your family can check it matches the record.</p></div>
     ${rows}
     <div class="nom-f"><button type="button" class="btn small" data-act="addNom" ${shown >= NOM_MAX ? 'hidden' : ''}>+ Add another nominee</button><p class="warn" data-nomwarn hidden></p></div>
   </section>`;
@@ -1439,7 +1450,7 @@ function markSaved(name, linked){ S.dirty = false; S.savedName = name; S.savedAt
 function saveBar(){
   if (S.sample || !totalEntries()) return '';
   if (S.dirty) return `<div class="savebar dirty"><span><b>Not saved yet.</b> You don't have to finish in one go. Save your file now, and next time use Import my data with it to carry on.</span><button class="btn small primary" data-act="saveProgress">Save progress</button></div>`;
-  if (S.savedName) return `<div class="savebar"><span>Saved to <b>${esc(S.savedName)}</b> at ${S.savedAt.toLocaleTimeString('en-IN', { hour:'numeric', minute:'2-digit' })}. ${S.linked ? 'Save progress will keep updating this same file.' : 'Next time, open Virasat and import this file to carry on.'}</span></div>`;
+  if (S.savedName) return `<div class="savebar"><span>Saved to <b>${esc(S.savedName)}</b> at ${S.savedAt.toLocaleTimeString('en-IN', { hour:'numeric', minute:'2-digit' })}. ${S.linked ? 'Save progress will keep updating this same file. You can import it any time, any day, to carry on.' : 'You can import this file any time, any day, to carry on.'}</span></div>`;
   return '';
 }
 async function saveProgressNow(){
@@ -1450,12 +1461,23 @@ async function saveProgressNow(){
       if (!fileHandle) fileHandle = await window.showSaveFilePicker({ suggestedName:defaultFileName(), types:[XLSX_TYPE] });
       const buf = await (await buildWorkbook(S)).xlsx.writeBuffer();
       const w = await fileHandle.createWritable(); await w.write(buf); await w.close();
-      markSaved(fileHandle.name, true); render(); toast(`Saved to ${fileHandle.name}`); return;
+      markSaved(fileHandle.name, true); render(); savedNote(fileHandle.name, true); return;
     } catch (err) { if (err && err.name === 'AbortError') return; console.error(err); fileHandle = null; }
   }
   const name = defaultFileName();
   const buf = await (await buildWorkbook(S)).xlsx.writeBuffer();
-  if (await saveFile(name, new Blob([buf], { type:XLSX_MIME }))) { markSaved(name, false); render(); }
+  if (await saveFile(name, new Blob([buf], { type:XLSX_MIME }))) { markSaved(name, false); render(); savedNote(name, false); }
+}
+let savedNoteShown = false;
+function savedNote(name, linked){
+  if (savedNoteShown) { toast(`Saved to ${name}`); return; }
+  savedNoteShown = true;
+  openSheet(`<h2 id="sheetTitle">Saved. Carry on any day.</h2>
+  <p>Your list is saved in <b>${esc(name)}</b>.</p>
+  <ul><li><b>You can import this file any time, any day</b> and continue filling in other details. Open Virasat, tap <b>Import my data</b> and choose this file.</li>
+  <li>${linked ? 'While this page stays open, <b>Save progress</b> keeps updating this same file.' : 'Each time you save, a new copy is made. Use the newest one next time.'}</li>
+  <li>Keep it somewhere safe, such as a password-protected folder only your family can open.</li></ul>
+  <div class="acts"><button class="btn primary" data-act="close">Continue filling</button></div>`);
 }
 function pickImportFile(){ $('#fileIn').value = ''; $('#fileIn').click(); }
 let pendingHandle = null;

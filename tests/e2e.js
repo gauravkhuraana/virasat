@@ -145,12 +145,15 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   await page.click('[data-act="add"]');
   await page.fill('#fld-bank', 'Canara Bank');
   await page.click('form[data-form="entry"] button[type="submit"]');
-  const dirtyBar = await page.isVisible('.savebar.dirty');
+  const dirtyBar = await page.isVisible('.savebar.dirty') && await page.isVisible('#saveFloat');
   await page.evaluate(() => { window.showSaveFilePicker = undefined; });
   const [sp] = await Promise.all([page.waitForEvent('download'), page.click('#saveBtn')]);
   await sp.saveAs(OUT + '/progress.xlsx');
+  const noteOk = (await page.textContent('#sheet')).includes('any time, any day');
+  await page.click('[data-act="close"]');
+  const floatGone = await page.isHidden('#saveFloat');
   const savedBar = (await page.textContent('.savebar')).includes('Saved to');
-  const saveOk = dirtyBar && savedBar;
+  const saveOk = dirtyBar && savedBar && noteOk && floatGone;
   console.log('save progress ok:', saveOk);
 
   // template + sample xlsx
