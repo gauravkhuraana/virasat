@@ -1161,7 +1161,7 @@ function renderShared(){
   </section>
   <div class="go"><button class="btn primary" data-act="view" data-v="summary">Done</button></div>`;
 }
-const startLabel = (n, hasData) => n ? `${hasData ? 'Back to my list' : 'Start my list'} (${n} ${n === 1 ? 'category' : 'categories'})` : 'Tick what you have to start';
+const startLabel = (n, hasData) => n ? `${hasData ? 'Proceed with filling' : 'Start my list'} (${n} ${n === 1 ? 'category' : 'categories'})` : 'Tick what you have to start';
 function renderSetup(){
   const counts = id => list(id).length;
   const groups = GROUPS.map(g => {
