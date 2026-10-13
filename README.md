@@ -16,6 +16,10 @@ Official home: **[gauravkhurana.com/virasat](https://gauravkhurana.com/virasat)*
 ## Features
 
 - About 27 categories, grouped by Banking, Insurance, From your employer, Investments, Retirement, Property & valuables, Loans & cards, Business & digital, and Will, papers & contacts
+- A simple 3-step flow: pick what you have, fill in details (at your own pace), save the file
+- Nominee section on every account and policy: up to four nominees with relationship, date of birth and share %, a check that shares total 100%, and an Overview warning for entries with no nominee
+- "Last updated" date stamped on every entry
+- Save progress: saves the Excel file (and on desktop Chrome/Edge, keeps updating the same file); import it later to carry on
 - One person or a whole family (a "Belongs to" column)
 - Shared details set once: documents folder link, where the original papers are kept, mobile numbers and emails linked to accounts
 - Upcoming dates: premiums, renewals, EMIs, SIPs and maturities in date order, with recurring dates rolled forward, Google Calendar links and an `.ics` export

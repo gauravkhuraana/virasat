@@ -12,6 +12,8 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   const url = 'file://' + path.resolve('dist/site/index.html');
   await page.goto(url);
   await page.screenshot({ path: OUT + '/1-setup.png', fullPage: false });
+  const howOk = await page.isVisible('.how3') && (await page.$$('.how3-i')).length === 3 && !!(await page.$('footer a[href="https://github.com/gauravkhuraana/virasat"]'));
+  console.log('3 steps + open code link:', howOk);
   const setupClean = (await page.$$('#commonLink, #personIn, [data-act="mode"]')).length === 0;
   console.log('setup asks only for categories:', setupClean);
 
@@ -119,6 +121,38 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   await page.screenshot({ path: OUT + '/15-support.png' });
   await page.keyboard.press('Escape');
 
+  // nominees: shares must total 100
+  await page.click('[data-v="cat:life"]');
+  await page.click('.card [data-act="edit"]');
+  const twoRows = await page.$$eval('.nom-row', r => r.filter(x => !x.hidden).length);
+  await page.fill('#fld-nominee2Share', '60');
+  const shareWarn = await page.isVisible('[data-nomwarn]');
+  await page.fill('#fld-nominee2Share', '50');
+  const shareOk = !(await page.isVisible('[data-nomwarn]'));
+  await page.click('[data-act="addNom"]');
+  await page.fill('#fld-nominee3', 'Anaya Sharma');
+  await page.click('.nom-row[data-nom="3"] [data-act="rmNom"]');
+  await page.screenshot({ path: OUT + '/29-nominees.png', fullPage: true });
+  await page.click('form[data-form="entry"] button[type="submit"]');
+  const lifeE = await page.evaluate(() => S.entries.life.find(e => e.plan === 'Jeevan Anand'));
+  const nomOk = twoRows === 2 && shareWarn && shareOk && lifeE.nominee2 === 'Aarav Sharma' && !lifeE.nominee3 && lifeE.updated === new Date().toISOString().slice(0, 10).replace(/^(.*)$/, m => m) ;
+  console.log('nominee flow ok:', nomOk, twoRows, shareWarn, shareOk, lifeE.nominee2, lifeE.nominee3, lifeE.updated);
+
+  // save progress (download fallback when the file picker is not available), on a real (non-sample) list
+  await page.click('[data-act="fresh"]');
+  await page.check('[data-cat="bank"]');
+  await page.click('[data-act="start"]');
+  await page.click('[data-act="add"]');
+  await page.fill('#fld-bank', 'Canara Bank');
+  await page.click('form[data-form="entry"] button[type="submit"]');
+  const dirtyBar = await page.isVisible('.savebar.dirty');
+  await page.evaluate(() => { window.showSaveFilePicker = undefined; });
+  const [sp] = await Promise.all([page.waitForEvent('download'), page.click('#saveBtn')]);
+  await sp.saveAs(OUT + '/progress.xlsx');
+  const savedBar = (await page.textContent('.savebar')).includes('Saved to');
+  const saveOk = dirtyBar && savedBar;
+  console.log('save progress ok:', saveOk);
+
   // template + sample xlsx
   await page.click('[data-act="home"]');
   const tpl = await dl('[data-act="template"]');
@@ -174,6 +208,9 @@ const OUT = path.resolve('test-out'); require('fs').mkdirSync(OUT, { recursive: 
   if (errors.length) failures.push('console errors: ' + errors.join(' | '));
   if (requests.length) failures.push('page made outgoing requests: ' + requests.join(', '));
   if (!fbOk) failures.push('feedback link is wrong');
+  if (!howOk) failures.push('3-step strip or open-code link missing');
+  if (!nomOk) failures.push('nominee flow broken');
+  if (!saveOk) failures.push('save progress broken');
   if (!setupClean) failures.push('setup still asks for names or shared details');
   if (!sharedOk) failures.push('shared details page missing');
   if (!qrOk) failures.push('UPI QR image did not render');

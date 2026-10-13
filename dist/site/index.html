@@ -258,6 +258,30 @@ footer .foot-acts{flex-basis:100%;display:flex;justify-content:center;flex-wrap:
 footer .site{flex-basis:100%;text-align:center;margin-top:1rem;font-weight:600;color:var(--peacock);text-decoration:none;letter-spacing:.02em}
 footer .site:hover{text-decoration:underline}
 
+/* v7: steps, save bar, nominees */
+.how3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.25rem;padding-block:1.75rem;border-bottom:1px solid var(--line)}
+.how3-i{display:flex;gap:.8rem;align-items:flex-start}
+.how3-n{flex:none;width:38px;height:38px;border-radius:50%;background:var(--peacock);color:var(--peacock-ink);display:grid;place-items:center;font-family:var(--f-display);font-size:1.2rem}
+.how3 b{display:block;font-size:1.05rem}
+.how3 p{color:var(--muted);font-size:.9rem;margin-top:.15rem}
+.savebar{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;justify-content:space-between;background:var(--ok-soft);color:var(--ink);border-radius:10px;padding:.6rem .9rem;margin-bottom:1rem;font-size:.9rem}
+.savebar.dirty{background:var(--marigold-soft)}
+.savebar span{flex:1 1 320px}
+.nom-block{border:1.5px solid var(--marigold);background:color-mix(in srgb,var(--marigold-soft) 55%,var(--surface));border-radius:10px;padding:.85rem 1rem;display:grid;gap:.8rem}
+.nom-h h4{font-family:var(--f-display);font-weight:400;font-size:1.2rem;margin:0}
+.nom-h p{font-size:.85rem;color:var(--muted);margin-top:.2rem;max-width:75ch}
+.nom-row{display:grid;gap:.4rem}
+.nom-row-h{display:none;align-items:center;gap:.8rem;font-size:.85rem}
+.nom-block.multi .nom-row-h{display:flex}
+.nom-row + .nom-row{border-top:1px dashed var(--line);padding-top:.7rem}
+.nom-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1.3fr) minmax(0,.8fr);gap:.6rem .8rem}
+.nom-block:not(.multi) .nom-grid > .field:nth-child(4){display:none}
+.nom-block:not(.multi) .nom-grid{grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1.3fr)}
+.nom-f{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.nom-f .warn{margin:0}
+.facts .no-nom{color:var(--marigold);font-weight:600}
+.facts .upd{margin-left:auto;font-size:.8rem}
+@media (max-width:640px){.how3{grid-template-columns:1fr;gap:.9rem}.nom-grid,.nom-block:not(.multi) .nom-grid{grid-template-columns:1fr 1fr}}
 /* v3: export choice, shared ids */
 .choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.6rem;margin-top:.8rem}
 .choice{display:grid;gap:.3rem;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:.9rem 1rem;color:var(--ink)}
@@ -332,6 +356,7 @@ details.find p{font-size:.8rem;color:var(--ink);background:var(--surface-2);bord
     <button class="privacy-pill" data-act="privacy" aria-label="Only you can see what you type. See how."><i></i>Only you can see what you type<span class="how">How?</span></button>
     <div class="top-actions">
       <button class="btn" data-act="sample" id="sampleBtn">Explore with sample data</button>
+      <button class="btn" data-act="saveProgress" id="saveBtn">Save progress</button>
       <button class="btn primary" data-act="export" id="exportBtn">Export my data</button>
     </div>
   </div>
@@ -344,7 +369,7 @@ details.find p{font-size:.8rem;color:var(--ink);background:var(--surface-2);bord
 <footer>
   <span>Nothing is saved on this site. Before you close this page, tap Export my data to save your file.</span>
   <span>Claim notes are a draft. Check with the institution before relying on them.</span>
-  <div class="foot-acts"><button class="btn small" data-act="feedback">Report a bug or idea</button><button class="btn small" data-act="support">Support Virasat</button></div>
+  <div class="foot-acts"><button class="btn small" data-act="feedback">Report a bug or idea</button><button class="btn small" data-act="support">Support Virasat</button><a class="btn small" href="https://github.com/gauravkhuraana/virasat" target="_blank" rel="noopener noreferrer">Open code on GitHub</a></div>
   <a class="site" href="https://gauravkhurana.com" target="_blank" rel="noopener noreferrer">gauravkhurana.com</a>
 </footer>
 <div class="overlay" id="overlay" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div></div>
@@ -854,7 +879,7 @@ const CATS = [
    fields:[
     F('bank','Bank','text',{key:1,ph:'SBI, HDFC Bank, ICICI Bank'}),
     F('type','Account type','select',{key:1,o:['Savings','Salary','Current','NRE','NRO','Joint savings']}),
-    F('last4','Account no. (last 4 digits)','text',{key:1,partial:1,ph:'4521'}),
+    F('last4','Account no.','text',{key:1,idok:1,alt:['Account no. (last 4 digits)'],hint:'The full number helps your family claim faster. Lock the file with a password before you share it.'}),
     F('balance','Approx. balance','money',{key:1}),
     F('branch','Branch / IFSC','text'),
     F('holding','Mode of holding','select',{o:['Single','Joint, either or survivor','Joint, former or survivor','Joint, jointly']}),
@@ -872,7 +897,7 @@ const CATS = [
     F('type','Type','select',{key:1,o:['Fixed deposit','Recurring deposit','Tax-saver FD','Corporate FD']}),
     F('principal','Amount invested','money',{key:1}),
     F('maturityDate','Maturity date','date',{key:1,remind:'Deposit matures',amt:'maturityAmt'}),
-    F('ref','FD / RD no. (last 4)','text',{partial:1}),
+    F('ref','FD / RD no.','text',{idok:1,alt:['FD / RD no. (last 4)']}),
     F('rate','Interest rate (%)','num'),
     F('maturityAmt','Maturity amount','money'),
     F('rdAmt','RD monthly instalment','money',{out:1,freq:'Monthly'}),
@@ -1035,7 +1060,7 @@ const CATS = [
     F('heldAt','Held at','text',{key:1,ph:'Head post office, Sector 19'}),
     F('balance','Approx. balance','money',{key:1}),
     F('depositDue','Next deposit due','date',{key:1,remind:'Scheme deposit due',amt:'yearlyDeposit',freq:'Yearly',hint:'PPF needs at least ₹500 by 31 March every year or the account becomes inactive.'}),
-    F('ref','Account / certificate no. (last 4)','text',{partial:1}),
+    F('ref','Account / certificate no.','text',{idok:1,alt:['Account / certificate no. (last 4)']}),
     F('yearlyDeposit','Yearly deposit','money',{out:1,freq:'Yearly'}),
     F('maturityDate','Maturity date','date',{remind:'Scheme matures'}),
    ],
@@ -1069,7 +1094,7 @@ const CATS = [
     F('value','Approx. value (₹)','money',{key:1}),
     F('vestDate','Next vest / purchase date','date',{remind:'Stock vest or purchase'}),
     F('country','Broker country','select',{o:['USA','India','UK','Other']}),
-    F('accountRef','Account ref. (last 4)','text',{partial:1}),
+    F('accountRef','Account no.','text',{idok:1,alt:['Account ref. (last 4)']}),
     F('units','Units held','num'),
     F('beneficiary','Beneficiary named on the platform?','select',{o:YN,hint:'Foreign brokers follow the beneficiary set on their own platform. Without one, heirs face a long legal process abroad.'}),
     F('hr','HR / benefits contact','text'),
@@ -1162,7 +1187,7 @@ const CATS = [
     F('emiDate','Next EMI date','date',{key:1,remind:'EMI due',amt:'emi',freq:'Monthly'}),
     F('outstanding','Approx. outstanding','money'),
     F('endDate','Loan ends on','date'),
-    F('ref','Loan account (last 4)','text',{partial:1}),
+    F('ref','Loan account no.','text',{idok:1,alt:['Loan account (last 4)']}),
     F('insured','Loan insured?','select',{o:YN,hint:'If the loan has a protection cover, the insurer may repay it. Ask the lender.'}),
     F('coBorrower','Co-borrower / guarantor','text'),
    ],
@@ -1412,9 +1437,29 @@ const MASTER = [
  { t:'Your email inbox', w:'Search "policy", "premium receipt", "folio", "allotment"', c:'Policies bought online, investments, subscriptions', d:'Most institutions send a welcome letter or statement by email.' },
 ];
 
+const DEFAULT_COMMON = ['nominee','contactPerson','contactPhone','mobile','email','docs','link','notes'];
+const REL = ['Spouse','Son','Daughter','Father','Mother','Brother','Sister','Other'];
+const NOM_MAX = 4, NOM_PARTS = ['', 'Rel', 'Dob', 'Share'];
+const nomKey = (i, part) => (i === 1 ? 'nominee' : 'nominee' + i) + part;
+const NOMINEE_FIELDS = [];
+for (let i = 1; i <= NOM_MAX; i++) {
+  const n = i === 1 ? 'Nominee' : 'Nominee ' + i;
+  NOMINEE_FIELDS.push(
+    F(nomKey(i, ''), n, 'text', { nom:i, part:'name', ph:'Full name' }),
+    F(nomKey(i, 'Rel'), n + ' relationship', 'select', { nom:i, part:'rel', o:REL }),
+    F(nomKey(i, 'Dob'), n + ' date of birth', 'date', { nom:i, part:'dob' }),
+    F(nomKey(i, 'Share'), n + ' share (%)', 'num', { nom:i, part:'share' }));
+}
+const UPDATED = F('updated', 'Last updated', 'date', { auto:1 });
+const hasNominee = cat => (cat.common || DEFAULT_COMMON).includes('nominee');
+function nomineesOf(e){
+  const out = [];
+  for (let i = 1; i <= NOM_MAX; i++) if (e[nomKey(i, '')]) out.push({ name:e[nomKey(i, '')], rel:e[nomKey(i, 'Rel')], share:e[nomKey(i, 'Share')] });
+  return out;
+}
 function allFields(cat, family){
-  const extra = (cat.common || ['nominee','contactPerson','contactPhone','mobile','email','docs','link','notes']).map(k => COMMON[k]);
-  return [...(family ? [OWNER] : []), ...cat.fields, ...extra];
+  const extra = (cat.common || DEFAULT_COMMON).flatMap(k => k === 'nominee' ? NOMINEE_FIELDS : [COMMON[k]]);
+  return [...(family ? [OWNER] : []), ...cat.fields, ...extra, UPDATED];
 }
 
 /* ---------- state ---------- */
@@ -1515,10 +1560,9 @@ function safetyWarning(f, v){
   if (!v || f.t === 'money' || f.t === 'num' || f.t === 'date' || f.t === 'select' || f.t === 'owner' || f.t === 'linked') return '';
   if (SECRET_RE.test(v)) return 'This looks like a password, PIN or secret. Don\'t store those here. Write where they can be found instead.';
   const digits = v.replace(/[\s-]/g, '');
-  if (f.partial && /\d{5,}/.test(digits)) return 'Only the last 4 digits are needed. Your family can get the full number from the bank or statement.';
+  if (f.partial && /\d{5,}/.test(digits)) return 'For cards, the last 4 digits are enough. A full card number in a file is risky if the file is lost.';
   if (f.t === 'tel' || f.idok) return '';
   if (/(^|\D)\d{4}[\s-]?\d{4}[\s-]?\d{4}(\D|$)/.test(v) && !/\d{13,}/.test(digits)) return 'This looks like an Aadhaar number. Note where the card is kept instead.';
-  if (/\d{13,19}/.test(digits)) return 'This looks like a full card or account number. Use the last 4 digits only.';
   return '';
 }
 
@@ -1528,8 +1572,9 @@ function render(){
   $('#sampleBar').hidden = !S.sample;
   $('#exportBtn').hidden = S.view === 'setup' && totalEntries() === 0;
   $('#sampleBtn').hidden = S.sample || totalEntries() > 0;
+  $('#saveBtn').hidden = S.sample || totalEntries() === 0;
   if (S.view === 'setup') m.innerHTML = renderSetup();
-  else m.innerHTML = `<div class="ws"><nav class="nav" aria-label="Categories">${renderNav()}</nav><section id="content" style="min-width:0">${renderContent()}</section></div>`;
+  else m.innerHTML = `<div class="ws"><nav class="nav" aria-label="Categories">${renderNav()}</nav><section id="content" style="min-width:0">${saveBar()}${renderContent()}</section></div>`;
   const cur = m.querySelector('.nav [aria-current="page"]');
   if (cur && window.matchMedia('(max-width:860px)').matches) cur.scrollIntoView({ block:'nearest', inline:'center' });
 }
@@ -1588,10 +1633,16 @@ function renderSetup(){
       <div><span class="dot">1</span><span><b>No login, no sign-up</b>Just open and start. We don't ask who you are.</span></div>
       <div><span class="dot">2</span><span><b>We can't see your details</b>What you type stays on your own phone or computer. It is never sent to us or anyone else.</span></div>
       <div><span class="dot">3</span><span><b>Nothing is saved on this site</b>Close the page and it's all gone. Save your file to keep a copy.</span></div>
+      <div><span class="dot">4</span><span><b>Open code</b>Anyone can read the code on <a href="https://github.com/gauravkhuraana/virasat" target="_blank" rel="noopener noreferrer">GitHub</a> and check it does what we say.</span></div>
     </div>
   </section>
+  <section class="how3" aria-label="How it works">
+    <div class="how3-i"><span class="how3-n">1</span><div><b>Pick what you have</b><p>Bank accounts, LIC, mutual funds, property and more.</p></div></div>
+    <div class="how3-i"><span class="how3-n">2</span><div><b>Fill in the details</b><p>Every field is optional. Do a little each day: save your file and carry on later.</p></div></div>
+    <div class="how3-i"><span class="how3-n">3</span><div><b>Save it for your family</b><p>Export as Excel or PDF, lock it with a password and keep it where they can find it.</p></div></div>
+  </section>
   <section class="step pick">
-    <div class="step-h"><div class="k">Start here</div><h2>What do you have?</h2><p>Tick everything you or your family has. Only these sections will appear, and you can change them later.</p>
+    <div class="step-h"><div class="k">Step 1</div><h2>What do you have?</h2><p>Tick everything you or your family has. Only these sections will appear, and you can change them later.</p>
       <div class="pick-acts"><button class="btn small" data-act="pick" data-p="common">Tick the common ones</button><button class="btn small" data-act="pick" data-p="all">Tick all</button><button class="btn small ghost" data-act="pick" data-p="none">Clear</button><button class="btn small ghost" data-act="view" data-v="find">Not sure what you own? &rarr;</button></div></div>
     <div>${groups}</div>
   </section>
@@ -1655,6 +1706,11 @@ function renderCard(cat, e){
   const skip = new Set([...cat.title, ...cat.sub, 'owner']);
   const facts = fields.filter(f => f.key && !skip.has(f.k) && e[f.k] && f.t !== 'date').slice(0, 4)
     .map(f => `<span>${esc(f.l)} <b>${esc(fmtVal(f, e[f.k]))}</b></span>`);
+  if (hasNominee(cat)) {
+    const noms = nomineesOf(e);
+    facts.unshift(noms.length ? `<span>Nominee <b>${esc(noms.map(n => n.name + (noms.length > 1 && n.share ? ` (${n.share}%)` : '')).join(', '))}</b></span>` : '<span class="no-nom">No nominee yet</span>');
+  }
+  if (e.updated) facts.push(`<span class="upd">Updated ${esc(fmtDate(e.updated))}</span>`);
   const next = upcomingItems().filter(i => i.e === e)[0];
   const sub = entrySub(cat, e);
   return `<article class="card">
@@ -1664,21 +1720,47 @@ function renderCard(cat, e){
   </article>`;
 }
 
+function nomineeBlock(e){
+  const filled = i => NOM_PARTS.some(p => e[nomKey(i, p)]);
+  let shown = 1; for (let i = 2; i <= NOM_MAX; i++) if (filled(i)) shown = i;
+  const L = { name:'Name', rel:'Relationship', dob:'Date of birth', share:'Share (%)' };
+  let rows = '';
+  for (let i = 1; i <= NOM_MAX; i++) {
+    rows += `<div class="nom-row" data-nom="${i}" ${i <= shown ? '' : 'hidden'}><div class="nom-row-h"><b>Nominee ${i}</b>${i > 1 ? `<button type="button" class="linkbtn" data-act="rmNom">Remove</button>` : ''}</div>
+      <div class="nom-grid">${NOMINEE_FIELDS.filter(f => f.nom === i).map(f => fieldInput(f, e, L[f.part])).join('')}</div></div>`;
+  }
+  return `<section class="nom-block ${shown > 1 ? 'multi' : ''}" data-nomblock>
+    <div class="nom-h"><h4>Nominee</h4><p>The most important detail on this page. With a nominee, your family can usually claim with a death certificate and a form. Without one, they may need a legal heir or succession certificate, which can take months. Add the date of birth too, so your family can check it matches the record.</p></div>
+    ${rows}
+    <div class="nom-f"><button type="button" class="btn small" data-act="addNom" ${shown >= NOM_MAX ? 'hidden' : ''}>+ Add another nominee</button><p class="warn" data-nomwarn hidden></p></div>
+  </section>`;
+}
+function checkShares(blk){
+  const w = blk.querySelector('[data-nomwarn]'); if (!w) return;
+  const rows = [...blk.querySelectorAll('.nom-row')].filter(r => !r.hidden);
+  if (rows.length < 2) { w.hidden = true; return; }
+  const vals = rows.map(r => num((r.querySelector('[name$="Share"]') || {}).value || ''));
+  const any = vals.some(v => isFinite(v));
+  const sum = vals.reduce((a, v) => a + (isFinite(v) ? v : 0), 0);
+  if (any && Math.abs(sum - 100) > 0.01) { w.textContent = `The shares add up to ${+sum.toFixed(2)}%. They should total 100%.`; w.hidden = false; }
+  else w.hidden = true;
+}
 function renderForm(cat, e){
-  const fields = allFields(cat, isFamily());
+  const fields = allFields(cat, isFamily()).filter(f => !f.auto && !f.nom);
   const key = fields.filter(f => f.key), more = fields.filter(f => !f.key);
   const moreFilled = more.some(f => e[f.k]);
   const isNew = !e.id;
   return `<form class="form" data-form="entry" data-cat="${cat.id}" novalidate>
-    <div class="form-h"><h3>${isNew ? `New ${esc(cat.noun)}` : esc(entryTitle(cat, e))}</h3><span class="hint">All fields optional</span></div>
+    <div class="form-h"><h3>${isNew ? `New ${esc(cat.noun)}` : esc(entryTitle(cat, e))}</h3><span class="hint">${e.updated ? `Last updated ${esc(fmtDate(e.updated))}` : 'All fields optional'}</span></div>
     <div class="grid">${key.map(f => fieldInput(f, e)).join('')}</div>
+    ${hasNominee(cat) ? nomineeBlock(e) : ''}
     ${more.length ? `<details class="more" ${moreFilled ? 'open' : ''}><summary>More details (${more.length})</summary><div class="grid">${more.map(f => fieldInput(f, e)).join('')}</div></details>` : ''}
     <div class="form-f"><button class="btn primary" type="submit">Save</button><button class="btn" type="button" data-act="cancel">Cancel</button><span class="sp"></span>
       ${isNew ? '' : `<button class="btn danger" type="button" data-act="del" data-id="${e.id}">Delete</button>`}</div>
   </form>`;
 }
 
-function fieldInput(f, e){
+function fieldInput(f, e, lbl){
   const id = 'fld-' + f.k, v = e[f.k] ?? '';
   const ph = f.ph ? ` placeholder="${esc(f.ph)}"` : '';
   let input;
@@ -1705,7 +1787,7 @@ function fieldInput(f, e){
     default: input = `<input id="${id}" name="${f.k}" autocomplete="off" value="${esc(v)}"${f.k === 'docs' && S.common.docs ? ` placeholder="Blank = ${esc(S.common.docs)}"` : ph}>`;
   }
   const w = safetyWarning(f, String(v));
-  return `<div class="field ${f.t === 'note' ? 'wide' : ''}"><label for="${id}">${esc(f.l)}</label>${input}${f.hint ? `<p class="hint">${esc(f.hint)}</p>` : ''}${f.find ? `<details class="find"><summary>Where do I find this?</summary><p>${esc(f.find)}</p></details>` : ''}<p class="warn" data-warn="${f.k}" ${w ? '' : 'hidden'}>${esc(w)}</p></div>`;
+  return `<div class="field ${f.t === 'note' ? 'wide' : ''}"><label for="${id}">${esc(lbl || f.l)}</label>${input}${f.hint ? `<p class="hint">${esc(f.hint)}</p>` : ''}${f.find ? `<details class="find"><summary>Where do I find this?</summary><p>${esc(f.find)}</p></details>` : ''}<p class="warn" data-warn="${f.k}" ${w ? '' : 'hidden'}>${esc(w)}</p></div>`;
 }
 
 function renderUpcoming(){
@@ -1737,6 +1819,12 @@ function renderUpcoming(){
   <p class="note" style="margin-top:1.25rem">Virasat can't remind you because it keeps nothing. The calendar file puts these dates, with a 3-day alert, into Google Calendar, Outlook or your phone's calendar. "Add to Google Calendar" opens Google with only that item's title and date.</p>`;
 }
 
+function nomineeTip(){
+  const miss = selectedCats().filter(hasNominee).map(c => [c, list(c.id).filter(e => !e.nominee).length]).filter(([, n]) => n);
+  const tot = miss.reduce((a, [, n]) => a + n, 0);
+  if (!tot) return '';
+  return `<div class="tip nomtip" style="margin-bottom:1.25rem"><b>Nominee</b><span>${tot} ${tot === 1 ? 'entry has' : 'entries have'} no nominee: ${miss.map(([c, n]) => `<button class="linkbtn" data-act="view" data-v="cat:${c.id}">${esc(c.name)} (${n})</button>`).join(', ')}. A nominee can save your family months of paperwork.</span></div>`;
+}
 function renderSummary(){
   const T = totals(), n = totalEntries();
   const rows = selectedCats().map(c => { const p = T.perCat[c.id];
@@ -1746,6 +1834,7 @@ function renderSummary(){
   return `<div class="cat-h"><div class="eyebrow">${S.preparedBy ? esc(S.preparedBy) : 'Your list'}</div><h2>Overview</h2>
     <p>${n ? `${n} ${n === 1 ? 'entry' : 'entries'} across ${selectedCats().filter(c => list(c.id).length).length} categories. Values are your own estimates.` : 'Nothing listed yet. Pick a category on the left to begin.'}</p></div>
   ${commonBlock()}
+  ${nomineeTip()}
   <div class="stats">
     <div class="stat"><span>Assets (approx.)</span><b>${inr(T.asset) || '₹0'}</b></div>
     <div class="stat"><span>Insurance cover</span><b>${inr(T.cover) || '₹0'}</b></div>
@@ -1802,6 +1891,41 @@ async function saveFile(name, data, type){
   return true;
 }
 function fileStamp(){ return iso(new Date()); }
+/* save progress: one file the person keeps updating */
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+const XLSX_TYPE = { description:'Excel file', accept:{ [XLSX_MIME]:['.xlsx'] } };
+let fileHandle = null;
+const canPickFile = () => OFFLINE && typeof window.showSaveFilePicker === 'function' && typeof window.showOpenFilePicker === 'function';
+function defaultFileName(){ const who = (S.preparedBy || '').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-'); return `Virasat${who ? '-' + who : ''}-${fileStamp()}.xlsx`; }
+function markSaved(name, linked){ S.dirty = false; S.savedName = name; S.savedAt = new Date(); S.linked = !!linked; }
+function saveBar(){
+  if (S.sample || !totalEntries()) return '';
+  if (S.dirty) return `<div class="savebar dirty"><span><b>Not saved yet.</b> You don't have to finish in one go. Save your file now, and next time use Import my data with it to carry on.</span><button class="btn small primary" data-act="saveProgress">Save progress</button></div>`;
+  if (S.savedName) return `<div class="savebar"><span>Saved to <b>${esc(S.savedName)}</b> at ${S.savedAt.toLocaleTimeString('en-IN', { hour:'numeric', minute:'2-digit' })}. ${S.linked ? 'Save progress will keep updating this same file.' : 'Next time, open Virasat and import this file to carry on.'}</span></div>`;
+  return '';
+}
+async function saveProgressNow(){
+  if (!totalEntries()) { toast('Add at least one entry first.'); return; }
+  if (!needExcel()) return;
+  if (canPickFile()) {
+    try {
+      if (!fileHandle) fileHandle = await window.showSaveFilePicker({ suggestedName:defaultFileName(), types:[XLSX_TYPE] });
+      const buf = await (await buildWorkbook(S)).xlsx.writeBuffer();
+      const w = await fileHandle.createWritable(); await w.write(buf); await w.close();
+      markSaved(fileHandle.name, true); render(); toast(`Saved to ${fileHandle.name}`); return;
+    } catch (err) { if (err && err.name === 'AbortError') return; console.error(err); fileHandle = null; }
+  }
+  const name = defaultFileName();
+  const buf = await (await buildWorkbook(S)).xlsx.writeBuffer();
+  if (await saveFile(name, new Blob([buf], { type:XLSX_MIME }))) { markSaved(name, false); render(); }
+}
+function pickImportFile(){ $('#fileIn').value = ''; $('#fileIn').click(); }
+let pendingHandle = null;
+function handleImportFile(f, h){
+  if (totalEntries() && !S.sample) { pendingFile = f; pendingHandle = h || null; confirmSheet('Replace what is on screen?', `Loading ${f.name} replaces the ${totalEntries()} entries you have open now. Save your current list first if you need it.`, 'confirmLoad', 'Replace and load'); }
+  else doImport(f, h);
+}
+async function doImport(f, h){ if (await importXlsx(f)) { fileHandle = h || null; markSaved(f.name, !!h); render(); } }
 function needExcel(){
   if (typeof ExcelJS === 'undefined') { toast('The Excel engine has not loaded. Check your connection once, then try again.'); return false; }
   return true;
@@ -1849,7 +1973,7 @@ async function buildWorkbook(st){
     ['"Upcoming" lists premiums, renewals, EMIs and maturities in date order. "Summary" shows totals.', ''],
     ['', ''],
     ['What it does NOT contain', 'h'],
-    ['No passwords, PINs or full account numbers. To claim, use the institution, policy or folio numbers, nominee and document locations listed here.', ''],
+    ['No passwords or PINs. To claim, use the account, policy or folio numbers, nominees and document locations listed here.', ''],
     ['Start with the "Will & documents" and "Key contacts" tabs if they exist.', ''],
     ['', ''],
     ['Keep it safe', 'h'],
@@ -1902,7 +2026,8 @@ async function buildWorkbook(st){
   // Category sheets
   for (const cat of cats) {
     const ws = wb.addWorksheet(cat.sheet);
-    const fields = allFields(cat, family);
+    const maxNom = Math.max(1, ...ent(cat.id).map(e => nomineesOf(e).length));
+    const fields = allFields(cat, family).filter(f => !f.nom || (f.nom <= maxNom && !(maxNom === 1 && f.part === 'share')));
     ws.columns = fields.map(f => ({ header:f.l, key:f.k, width:Math.min(40, Math.max(12, f.l.length + 4, f.t === 'note' ? 36 : f.t === 'url' ? 30 : 0)) }));
     styleHeader(ws, fields.length);
     for (const e of ent(cat.id)) {
@@ -2002,7 +2127,7 @@ async function importXlsx(file){
     const cat = CAT[catId]; if (!cat) return;
     found++; st.cats.add(cat.id);
     const fields = allFields(cat, true);
-    const byLabel = new Map(fields.flatMap(f => [[f.l.toLowerCase(), f], [f.k.toLowerCase(), f]]));
+    const byLabel = new Map(fields.flatMap(f => [[f.l.toLowerCase(), f], [f.k.toLowerCase(), f], ...(f.alt || []).map(a => [a.toLowerCase(), f])]));
     const cols = [];
     ws.getRow(1).eachCell((c, col) => { const f = byLabel.get(String(c.value ?? '').trim().toLowerCase()); if (f) cols.push([col, f]); });
     const out = [];
@@ -2020,6 +2145,7 @@ async function importXlsx(file){
   S.view = 'summary';
   render();
   toast(`Loaded ${rowsRead} ${rowsRead === 1 ? 'entry' : 'entries'} from ${found} ${found === 1 ? 'tab' : 'tabs'}`);
+  return true;
 }
 
 /* ---------- sample data ---------- */
@@ -2036,7 +2162,7 @@ function sampleState(){
       { name:'Vinod Kumar', role:'Insurance agent', phone:'98120 00003', helps:'Both LIC policies' },
       { name:'Neha Arora', role:'Employer HR', phone:'98130 00004', helps:'Sunita\'s group cover and RSUs at Contoso' }],
     bank:[
-      { bank:'State Bank of India', type:'Savings', last4:'4521', balance:'185000', mobile:'Ramesh 98100 00011', contactPerson:'Manish (branch RM)', contactPhone:'0120 400 0000', branch:'Sector 18, Noida', holding:'Joint, either or survivor', jointWith:Su, govtCover:'Both', nominee:Su, owner:R },
+      { bank:'State Bank of India', type:'Savings', last4:'4521', balance:'185000', mobile:'Ramesh 98100 00011', contactPerson:'Manish (branch RM)', contactPhone:'0120 400 0000', branch:'Sector 18, Noida', holding:'Joint, either or survivor', jointWith:Su, govtCover:'Both', nominee:Su, nomineeRel:'Spouse', nomineeDob:'1986-07-14', owner:R },
       { bank:'HDFC Bank', type:'Salary', last4:'7788', balance:'92000', mobile:'Sunita 98100 00022', email:'sunita.sample@example.com', nominee:R, owner:Su },
       { bank:'Punjab National Bank', type:'Savings', last4:'0193', balance:'12000', branch:'Karnal (old account)', nominee:'Not set', owner:R, notes:'Not used since 2015. May be dormant.' }],
     deposits:[
@@ -2044,7 +2170,7 @@ function sampleState(){
       { institution:'SBI', type:'Recurring deposit', principal:'60000', rdAmt:'5000', rdDate:d(9), maturityDate:y(2027,9,5), owner:R }],
     locker:[{ bank:'SBI', branch:'Sector 18, Noida', keyAt:'Steel almirah, small red pouch', rentDue:d(75), lockerNo:'214', jointWith:Su, rent:'3000', contents:'Gold jewellery, property papers', nominee:Su, owner:R }],
     life:[
-      { insurer:'LIC', plan:'Jeevan Anand', policyNo:'SAMPLE-900001', sumAssured:'500000', premium:'24500', freq:'Yearly', dueDate:d(12), insured:R, maturityDate:y(2034,3,28), maturityAmt:'1150000', agent:'Vinod Kumar, 98120 00003', nominee:Su, docs:'File cabinet, blue folder', owner:R },
+      { insurer:'LIC', plan:'Jeevan Anand', policyNo:'SAMPLE-900001', sumAssured:'500000', premium:'24500', freq:'Yearly', dueDate:d(12), insured:R, maturityDate:y(2034,3,28), maturityAmt:'1150000', agent:'Vinod Kumar, 98120 00003', nominee:Su, nomineeRel:'Spouse', nomineeDob:'1986-07-14', nomineeShare:'50', nominee2:'Aarav Sharma', nominee2Rel:'Son', nominee2Dob:'2015-03-02', nominee2Share:'50', docs:'File cabinet, blue folder', owner:R },
       { insurer:'LIC', plan:'New Endowment', policyNo:'SAMPLE-900002', sumAssured:'300000', premium:'6200', freq:'Quarterly', dueDate:d(50), insured:Su, maturityDate:y(2031,11,15), nominee:R, owner:Su }],
     term:[{ insurer:'HDFC Life', policyNo:'SAMPLE-TRM-001', sumAssured:'10000000', premium:'14800', freq:'Yearly', dueDate:d(150), coverTill:y(2055,6,30), source:'Bought myself', riders:'Accidental death', nominee:Su, owner:R }],
     health:[
@@ -2080,7 +2206,8 @@ function sampleState(){
       { service:'Gmail and Google Photos', username:'ramesh.sample@example.com', action:'Download data, then close', legacy:'No', owner:R },
       { service:'Domain sharmafamily.example', username:'ramesh.sample@example.com', action:'Keep running', renewal:d(120), cost:'900', owner:R }],
   };
-  for (const k in E) E[k] = E[k].map(e => ({ id:uid(), ...e }));
+  let n = 0;
+  for (const k in E) E[k] = E[k].map(e => ({ id:uid(), ...e, updated:d(-(4 + (n++ * 13) % 330)) }));
   return { mode:'family', people:[R, Su], preparedBy:'Ramesh Sharma (sample)', common:{ link:'https://drive.google.com/drive/folders/SAMPLE-family-papers', docs:'Blue file, study cupboard' }, ids:{ mobiles:['Ramesh 98100 00011', 'Sunita 98100 00022'], emails:['ramesh.sample@example.com', 'sunita.sample@example.com'] }, cats:new Set(Object.keys(E)), entries:E };
 }
 
@@ -2095,6 +2222,7 @@ function privacySheet(){
   <li><b>Close the page and it's gone.</b> To keep your list, tap <b>Export my data</b> and save the file. That file is yours.</li>
   <li><b>No ads, no tracking.</b></li></ul>
   <h3>Want to check?</h3>
+  <p>The code is open on GitHub, so anyone can read it: <a href="https://github.com/gauravkhuraana/virasat" target="_blank" rel="noopener noreferrer">github.com/gauravkhuraana/virasat</a></p>
   <p>After this page opens, turn off your internet (Wi-Fi and mobile data). Everything still works, even saving your file. That's because nothing needs to be sent anywhere.</p>
   <h3>Only use the real site</h3>
   <p>The only official address is <b>gauravkhurana.com/virasat</b>. Don't type your details into copies on other websites.</p>
@@ -2136,7 +2264,12 @@ function readForm(form){
 function saveEntry(form){
   const cat = CAT[form.dataset.cat], data = readForm(form);
   if (!Object.values(data).some(Boolean)) { toast('Fill in at least one field, or press Cancel.'); return false; }
+  const groups = [];
+  for (let i = 1; i <= NOM_MAX; i++) { const g = NOM_PARTS.map(p => data[nomKey(i, p)] || ''); if (g.some(Boolean)) groups.push(g); NOM_PARTS.forEach(p => delete data[nomKey(i, p)]); }
+  groups.forEach((g, n) => NOM_PARTS.forEach((p, j) => { if (g[j]) data[nomKey(n + 1, p)] = g[j]; }));
+  if (groups.length === 1) delete data[nomKey(1, 'Share')];
   for (const k in data) if (data[k] === '') delete data[k];
+  data.updated = iso(today());
   const ed = S.editing;
   if (ed.id === 'new') list(cat.id).unshift({ id:uid(), ...data });
   else { const arr = list(cat.id), i = arr.findIndex(x => x.id === ed.id); if (i >= 0) arr[i] = { id:ed.id, ...data }; }
@@ -2161,7 +2294,16 @@ const ACTIONS = {
   del(b){ if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Confirm delete'; setTimeout(() => { if (b.isConnected) { b.classList.remove('armed'); b.textContent = 'Delete'; } }, 4000); return; }
     const arr = list(S.editing.cat); const i = arr.findIndex(x => x.id === b.dataset.id); if (i >= 0) arr.splice(i, 1);
     S.editing = null; markDirty(); render(); toast('Deleted'); },
-  load(){ guard(() => { if (!S.editing) render(); $('#fileIn').value = ''; $('#fileIn').click(); }); },
+  load(){ guard(async () => { if (!S.editing) render();
+    if (canPickFile()) { try { const [h] = await window.showOpenFilePicker({ types:[XLSX_TYPE], multiple:false }); handleImportFile(await h.getFile(), h); } catch (err) { if (!err || err.name !== 'AbortError') { console.error(err); pickImportFile(); } } return; }
+    pickImportFile(); }); },
+  saveProgress(){ guard(() => { if (!S.editing) render(); return saveProgressNow(); }); },
+  addNom(b){ const blk = b.closest('[data-nomblock]'), rows = [...blk.querySelectorAll('.nom-row')], row = rows.find(r => r.hidden); if (!row) return;
+    row.hidden = false; blk.classList.add('multi'); if (!rows.some(r => r.hidden)) b.hidden = true; const i = row.querySelector('input'); if (i) i.focus(); checkShares(blk); },
+  rmNom(b){ const blk = b.closest('[data-nomblock]'), row = b.closest('.nom-row');
+    row.querySelectorAll('input,select').forEach(x => { x.value = ''; }); row.hidden = true;
+    blk.classList.toggle('multi', [...blk.querySelectorAll('.nom-row')].filter(r => !r.hidden).length > 1);
+    blk.querySelector('[data-act="addNom"]').hidden = false; checkShares(blk); },
   export(){ guard(() => { if (!S.editing) render(); if (!totalEntries()) { toast('Add at least one entry first.'); return; } exportSheet(); }); },
   exportXlsx(){ closeSheet(); ACTIONS.doExport(); },
   async exportPdf(){ if (!needPdf()) return; const pass = (($('#pdfPass') || {}).value || '').trim();
@@ -2171,8 +2313,9 @@ const ACTIONS = {
   rmId(b){ S.ids[b.dataset.list].splice(+b.dataset.i, 1); render(); },
   async doExport(){ if (!totalEntries()) { toast('Add at least one entry first.'); return; }
     const who = (S.preparedBy || '').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-');
-    const ok = await exportXlsx(S, `Virasat${who ? '-' + who : ''}-${fileStamp()}.xlsx`);
-    if (ok) { S.dirty = false; lockSheet(); } },
+    const name = `Virasat${who ? '-' + who : ''}-${fileStamp()}.xlsx`;
+    const ok = await exportXlsx(S, name);
+    if (ok) { markSaved(name, false); render(); lockSheet(); } },
   async template(){ await exportXlsx({ mode:'family', people:S.people.length ? S.people : ['Self', 'Spouse'], preparedBy:'', cats:new Set(CATS.map(c => c.id)), entries:{} }, 'Virasat-blank-template.xlsx'); },
   async sampleXlsx(){ await exportXlsx(sampleState(), 'Virasat-sample-made-up-data.xlsx'); },
   sample(){ const s = sampleState(); Object.assign(S, { mode:s.mode, people:s.people, preparedBy:s.preparedBy, common:s.common, ids:s.ids, cats:s.cats, entries:s.entries, sample:true, dirty:false, view:'summary', editing:null }); render(); window.scrollTo(0, 0); },
@@ -2192,13 +2335,13 @@ const ACTIONS = {
   csvTemplate(){ const cat = CAT[S.view.slice(4)]; if (!cat) return; const q = x => /[",\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x;
     saveFile(`Virasat-${cat.sheet.replace(/[^\w]+/g, '-')}-template.csv`, '﻿' + allFields(cat, isFamily()).map(f => q(f.l)).join(',') + '\r\n', 'text/csv'); },
   csvGo(){ if (!CSVJOB) return; readFillInputs(); const rows = csvRowsMapped(), cat = CSVJOB.cat;
-    list(cat.id).push(...rows.map(e => ({ id:uid(), ...e }))); markDirty(); CSVJOB = null; closeSheet(); render();
+    list(cat.id).push(...rows.map(e => ({ id:uid(), ...e, updated:iso(today()) }))); markDirty(); CSVJOB = null; closeSheet(); render();
     toast(`Imported ${rows.length} ${rows.length === 1 ? cat.noun : plural(cat)}`); },
   feedback(){ feedbackSheet(); },
   support(){ supportSheet(); },
   copyUpi(){ copyText(UPI_ID, 'UPI ID copied'); },
   fbCopy(){ const v = fbValues(); if (!v.title && !v.details) { toast('Write a line about the bug or idea first.'); return; } copyText(fbText(), 'Copied. Paste it into WhatsApp or email.'); },
-  async confirmLoad(){ closeSheet(); if (pendingFile) { const f = pendingFile; pendingFile = null; await importXlsx(f); } },
+  async confirmLoad(){ closeSheet(); if (pendingFile) { const f = pendingFile, h = pendingHandle; pendingFile = null; pendingHandle = null; await doImport(f, h); } },
 };
 /* ---------- PDF document ---------- */
 const pdfText = x => String(x ?? '').replace(/₹\s?/g, 'Rs. ').replace(/[–—]/g, '-').replace(/•/g, '*').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/…/g, '...').replace(/→/g, '->').replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, '?');
@@ -2236,7 +2379,7 @@ function buildPdf(st, password){
   doc.setFont('times', 'normal'); doc.setFontSize(30); doc.setTextColor(...PEA); doc.text('Virasat', M, y + 26); y += 38;
   doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...INK); doc.text('What my family should know', M, y + 12); y += 22;
   para(`Prepared by ${st.preparedBy || 'me'} on ${DATEF.format(new Date())}.`, 9);
-  para('This document lists bank accounts, insurance, investments, property, loans and important contacts, so nothing is missed. It has no passwords, PINs or full account numbers. To claim, use the institutions, policy or folio numbers, nominees, contact people and document locations given here.', 10, INK);
+  para('This document lists bank accounts, insurance, investments, property, loans and important contacts, so nothing is missed. It has no passwords or PINs. To claim, use the institutions, policy or folio numbers, nominees, contact people and document locations given here.', 10, INK);
 
   const c = st.common || {}, ids = st.ids || {};
   const shared = [['Original papers', c.docs], ['Scanned documents', c.link], ['Mobile numbers that get OTPs (keep these SIMs active)', (ids.mobiles || []).join(', ')], ['Linked email addresses', (ids.emails || []).join(', ')]].filter(r => r[1]);
@@ -2440,7 +2583,7 @@ async function readTable(file){
   }
   return parseCSV(await file.text());
 }
-const csvFields = cat => allFields(cat, isFamily()).filter(f => f.t !== 'owner');
+const csvFields = cat => allFields(cat, isFamily()).filter(f => f.t !== 'owner' && !f.auto);
 const synonyms = (cat, f) => [...((cat.csv && cat.csv.syn && cat.csv.syn[f.k]) || []), f.l, f.k].map(norm).filter(Boolean);
 function autoMap(cat, header){
   const map = {}, used = new Set(), H = header.map(norm);
@@ -2556,9 +2699,7 @@ document.addEventListener('change', e => {
   if (t.id === 'csvIn' && t.files[0]) { startCsvImport(t.files[0]); return; }
   if (t.dataset.change === 'csvmap' && CSVJOB) { if (t.value === '') delete CSVJOB.map[t.dataset.k]; else CSVJOB.map[t.dataset.k] = +t.value; rerenderCsv(); return; }
   if (t.dataset.change === 'csvfill' && CSVJOB) { CSVJOB.fill[t.dataset.k] = t.value; rerenderCsv(); return; }
-  if (t.id === 'fileIn' && t.files[0]) { const f = t.files[0];
-    if (totalEntries() && !S.sample) { pendingFile = f; confirmSheet('Replace what is on screen?', `Loading ${f.name} replaces the ${totalEntries()} entries you have open now. Download your current list first if you need it.`, 'confirmLoad', 'Replace and load'); }
-    else importXlsx(f); }
+  if (t.id === 'fileIn' && t.files[0]) handleImportFile(t.files[0], null);
 });
 document.addEventListener('input', e => {
   const t = e.target;
@@ -2570,6 +2711,7 @@ document.addEventListener('input', e => {
   if (t.id === 'exLink') { S.common.link = t.value.trim(); return; }
   if (t.id === 'glossQ') { S.glossQ = t.value; filterGloss(); return; }
   if (t.matches('[data-fb]')) { updateFb(); return; }
+  { const nb = t.closest('[data-nomblock]'); if (nb) checkShares(nb); }
   const form = t.closest('form[data-form="entry"]'); if (!form) return;
   const cat = CAT[form.dataset.cat]; const f = allFields(cat, isFamily()).find(x => x.k === t.name); if (!f) return;
   if (f.t === 'money') { const wd = form.querySelector(`[data-words="${f.k}"]`), n = num(t.value); if (wd) wd.textContent = isFinite(n) && n >= 1000 ? inr(n) + ' · ' + inWords(n) : ''; }
